@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Kafka 4.0 introduces Share Groups via KIP-932, bringing queue-like semantics to Kafka. Learn how share groups work, the in-flight record state machine, and how to use the new KafkaShareConsumer API.">
+    <title>Ever Felt Like Kafka Could Do More? Let's Talk Queues — Aswin</title>
+    <link rel="stylesheet" href="../styles.css">
+    <!-- highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="../index.html" class="logo">
+                <img src="../image/me.jpeg" alt="Aswin" class="logo-avatar">
+                <span>aswin</span>
+            </a>
+            <button class="nav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="nav-menu">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <rect y="3" width="22" height="2" rx="1" fill="currentColor"/>
+                    <rect y="10" width="22" height="2" rx="1" fill="currentColor"/>
+                    <rect y="17" width="22" height="2" rx="1" fill="currentColor"/>
+                </svg>
+            </button>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../articles.html">Articles</a></li>
+                <li><a href="../projects.html">Projects</a></li>
+                <li><a href="../talks.html">Talks</a></li>
+                <li><a href="../about.html">About</a></li>
+                <li><a href="../contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <article class="article-page">
+        <div class="container">
+
+            <header class="article-header">
+                <p class="article-meta">Kafka · KIP-932 · Share Groups · March 30, 2025</p>
+                <h1>Ever Felt Like Kafka Could Do More? Let's Talk Queues.</h1>
+                <p class="article-subtitle">Kafka 4.0 introduces Share Groups — a new way to consume messages that brings true queue-like semantics to Kafka without sacrificing its core strengths.</p>
+                <div class="article-byline">
+                    <img src="../image/me.jpeg" alt="Aswin" class="byline-avatar">
+                    <span>Aswin A</span>
+                    <span class="byline-sep">·</span>
+                    <span>Advisory Staff Software Engineer @ IBM</span>
+                    <span class="byline-sep">·</span>
+                    <span>7 min read</span>
+                </div>
+            </header>
+
+            <div class="article-hero-image">
+                <img src="image/thumbnail-for-kafka-queues.png" alt="Kafka Share Groups — queue semantics for Apache Kafka via KIP-932">
+            </div>
+
+            <div class="article-body">
+
+                <div class="article-tldr">
+                    <span class="tldr-label">tl;dr</span>
+                    <p>Kafka has always been a distributed log, not a message queue — and that's been both its strength and its limitation. KIP-932, shipping in Kafka 4.0, introduces <strong>Share Groups</strong>: multiple consumers sharing the same partition, per-record acknowledgements, and a state machine that handles retries and failures gracefully. Queue semantics, Kafka style.</p>
+                </div>
+
+                <p>If you've been working with Apache Kafka, you know it's a powerhouse for streaming data. But have you ever wished it could handle simple, queue-like tasks a bit more smoothly? You're not alone.</p>
+
+                <p>Traditionally, Kafka excels at high-volume, ordered streams — think of it as a super-efficient assembly line where each piece is processed in sequence. Great for real-time analytics or log processing. But what about when you just need to hand out tasks to workers, and you don't care about the order? That's where queues come in, and that's where Kafka has historically struggled.</p>
+
+                <h2>The Kafka "Queue" Conundrum</h2>
+
+                <p>If you've ever said "Kafka queue," you might have gotten a raised eyebrow from a Kafka expert. That's because at its core, Kafka is a <strong>distributed log</strong>, not a traditional message queue. It's built on topics and partitions, and consumers work in groups where each consumer has exclusive access to certain partitions.</p>
+
+                <p>This design has real benefits — massive throughput, ordered processing within partitions — but it also has meaningful limitations:</p>
+
+                <ul>
+                    <li>To add more consumers, you often need more partitions, which creates operational overhead.</li>
+                    <li>If one message fails, it can hold up everything else in that partition.</li>
+                    <li>Consumer count is capped at the number of partitions — you can't scale consumers independently.</li>
+                </ul>
+
+                <h2>Enter KIP-932: Share Groups</h2>
+
+                <p>That's where <strong>KIP-932</strong>, or "Queues for Kafka," comes in. With Kafka 4.0, we get a new feature called <strong>share groups</strong> — a way to make Kafka behave more like a traditional queue when you need it to, without giving up what makes Kafka great.</p>
+
+                <h3>What Are Share Groups?</h3>
+
+                <p>Share groups let multiple consumers work together on the same partition. You can scale out your consumers without worrying about the number of partitions — like a busy restaurant kitchen where multiple chefs can work on the same order simultaneously.</p>
+
+                <ul>
+                    <li>Consumers in a share group can pull messages from <em>any</em> partition — efficient load distribution with no static assignment.</li>
+                    <li>Messages are acknowledged <strong>one by one</strong>. A failed message doesn't block the entire partition.</li>
+                    <li>Kafka tracks the state of each message (<code>Available</code>, <code>Acquired</code>, <code>Acknowledged</code>, <code>Archived</code>), so you know exactly where it is in the pipeline.</li>
+                </ul>
+
+                <h2>Core Architecture</h2>
+
+                <h3>Share Partitions: Shared Consumption Across the Group</h3>
+
+                <p>Share groups use <strong>Share Partitions</strong> — a logical view of topic partitions managed by the partition leader. Unlike traditional consumer groups where each consumer owns specific partitions, share groups allow multiple consumers to dynamically pull records from any partition. This eliminates the need for over-partitioning and enables true elastic scaling.</p>
+
+                <figure class="article-figure">
+                    <img src="image/sg-cg-consumption-patterns.png" alt="Diagram comparing Share Group and Consumer Group consumption patterns — Share Group fans out all partitions to all consumers, Consumer Group assigns one partition per consumer">
+                    <figcaption>Share Group vs Consumer Group: in a share group, all consumers can pull from any partition. In a consumer group, each partition is exclusively owned by one consumer.</figcaption>
+                </figure>
+
+                <h3>In-Flight Records: Per-Record State Tracking</h3>
+
+                <p>A core feature of share groups is their ability to track the processing state of <strong>in-flight records</strong> — messages that have been fetched by consumers but not yet acknowledged. Each in-flight record has:</p>
+
+                <ul>
+                    <li>A <strong>state</strong>: <code>Available</code>, <code>Acquired</code>, <code>Acknowledged</code>, or <code>Archived</code></li>
+                    <li>A <strong>delivery count</strong>: how many times this record has been attempted</li>
+                </ul>
+
+                <p>In-flight records live within a window bounded by the <strong>Share Partition Start Offset (SPSO)</strong> and the <strong>Share Partition End Offset (SPEO)</strong>. As messages are acknowledged, the SPSO advances — moving the window forward.</p>
+
+                <figure class="article-figure">
+                    <img src="image/inflight-records.png" alt="In-flight records diagram showing offsets 0–9 with states: Acquired (2,4), Available (3,7), Acked (5), Archived (6), and the SPSO/SPEO window boundaries">
+                    <figcaption>The in-flight record window. SPSO marks the start of active processing; SPEO marks the latest fetched offset. Each record carries its state and delivery count.</figcaption>
+                </figure>
+
+                <p>Let's walk through what's happening in the diagram above:</p>
+
+                <ul>
+                    <li><strong>Records 2 &amp; 4 (Acquired, delivery count 1)</strong> — currently being reprocessed by a consumer after a prior failure.</li>
+                    <li><strong>Record 3 (Available, delivery count 1)</strong> — failed once, now waiting to be picked up again.</li>
+                    <li><strong>Record 5 (Acknowledged)</strong> — successfully processed and done.</li>
+                    <li><strong>Record 6 (Archived)</strong> — encountered a non-retriable failure; will not be retried.</li>
+                    <li><strong>Record 7 (Available, delivery count 0)</strong> — waiting for its first processing attempt.</li>
+                </ul>
+
+                <h3>State Machine: How Records Transition</h3>
+
+                <p>The state machine defines exactly how a record moves through its lifecycle. When fetched, it becomes <strong>Acquired</strong>. Successful processing moves it to <strong>Acknowledged</strong>. Failures trigger retries back to <strong>Available</strong> — or permanent archiving once the delivery count hits the maximum.</p>
+
+                <figure class="article-figure">
+                    <img src="image/state-machine.png" alt="State machine diagram showing record transitions: Available → Acquired → Acknowledged → Archived, with retry path back to Available and direct archive path on max retries or rejection">
+                    <figcaption>The share group record state machine. Acquisition lock timeouts automatically return stuck records to Available, preventing indefinite locking.</figcaption>
+                </figure>
+
+                <p>A key safety mechanism here is the <strong>acquisition lock timeout</strong>: if a consumer acquires a record but crashes without acknowledging it, the lock expires and the record returns to <code>Available</code> for another consumer to pick up.</p>
+
+                <h2>A Quick Look at the Code</h2>
+
+                <p>Kafka 4.0 introduces <code>KafkaShareConsumer</code>, which works similarly to the familiar <code>KafkaConsumer</code>. The key difference is per-record acknowledgement with explicit accept or release semantics.</p>
+
+                <pre><code class="language-java">Properties props = new Properties();
+props.setProperty("bootstrap.servers", "localhost:9092");
+props.setProperty("group.id", "my-share-group");
+
+try (KafkaShareConsumer&lt;String, String&gt; consumer = new KafkaShareConsumer&lt;&gt;(
+        props,
+        new StringDeserializer(),
+        new StringDeserializer())) {
+
+    consumer.subscribe(Arrays.asList("my-topic"));
+
+    while (true) {
+        ConsumerRecords&lt;String, String&gt; records = consumer.poll(Duration.ofMillis(100));
+
+        records.forEach(record -&gt; {
+            try {
+                // Process the record
+                System.out.println("Processing: " + record.value());
+
+                // Acknowledge success — record moves to Acknowledged
+                consumer.acknowledge(record, AcknowledgeType.ACCEPT);
+
+            } catch (Exception e) {
+                System.out.println("Failed: " + record.value() + " — releasing for retry");
+
+                // Release back to Available for another consumer to retry
+                consumer.acknowledge(record, AcknowledgeType.RELEASE);
+            }
+        });
+
+        // Commit all pending acknowledgements
+        consumer.commitSync();
+    }
+}</code></pre>
+
+                <p>The three acknowledgement types map directly to the state machine:</p>
+
+                <div class="ack-table">
+                    <div class="ack-row ack-header">
+                        <span>AcknowledgeType</span>
+                        <span>Resulting State</span>
+                        <span>Use when</span>
+                    </div>
+                    <div class="ack-row">
+                        <span><code>ACCEPT</code></span>
+                        <span class="state-acked">Acknowledged</span>
+                        <span>Processing succeeded</span>
+                    </div>
+                    <div class="ack-row">
+                        <span><code>RELEASE</code></span>
+                        <span class="state-available">Available</span>
+                        <span>Transient failure — retry later</span>
+                    </div>
+                    <div class="ack-row">
+                        <span><code>REJECT</code></span>
+                        <span class="state-archived">Archived</span>
+                        <span>Permanent failure — skip it</span>
+                    </div>
+                </div>
+
+                <h2>Things to Keep in Mind</h2>
+
+                <p>Share groups are an <strong>early access feature</strong> in Kafka 4.0. Before you reach for them in production:</p>
+
+                <ul>
+                    <li>The API may change in future releases — treat it as unstable.</li>
+                    <li>Dead letter queues are not included in the first release.</li>
+                    <li>For strict ordering requirements, classic consumer groups are still the right choice.</li>
+                    <li>Share groups are best suited for <strong>task distribution</strong> workloads, not event streaming pipelines where ordering matters.</li>
+                </ul>
+
+                <blockquote>
+                    <p>If you need order, use consumer groups. If you need scale and resilience for task workers, share groups are the answer.</p>
+                </blockquote>
+
+                <h2>What's Next?</h2>
+
+                <p>The Kafka community is actively working on improving share groups. Expect dead-letter queue support, improved retry configuration, and more operational tooling in future releases. KIP-932 is the foundation — the ecosystem will grow around it.</p>
+
+                <h2>Wrapping Up</h2>
+
+                <p>Share groups bring a new level of flexibility to Apache Kafka, opening it up to use cases that were previously awkward or impossible. Whether you're building a job queue, distributing background tasks, or just need to scale consumers beyond partition count, share groups are a powerful new tool in your Kafka arsenal.</p>
+
+                <p>Have you tried share groups in Kafka 4.0 yet? I'd love to hear how you're using them — or what you're still waiting for before you make the switch.</p>
+
+                <hr>
+
+            </div>
+
+            <div class="article-footer-nav">
+                <a href="../articles.html" class="read-more">← Back to all articles</a>
+            </div>
+
+        </div>
+    </article>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2025 Aswin. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="../privacy.html">Privacy</a>
+                    <span>·</span>
+                    <a href="../contact.html">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+        /* ── Article page layout ── */
+        .article-page {
+            padding: var(--spacing-2xl) 0 var(--spacing-3xl);
+        }
+
+        /* ── Hero image ── */
+        .article-hero-image {
+            max-width: 720px;
+            margin: 0 auto var(--spacing-2xl);
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid var(--color-border);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px var(--color-border);
+            position: relative;
+        }
+
+        .article-hero-image::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to bottom,
+                transparent 55%,
+                rgba(15, 17, 23, 0.45) 100%
+            );
+            pointer-events: none;
+            border-radius: 14px;
+        }
+
+        .article-hero-image img {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-height: 420px;
+            object-fit: cover;
+            object-position: center 30%;
+        }
+
+        .article-header {
+            max-width: 720px;
+            margin: 0 auto var(--spacing-lg);
+        }
+
+        .article-header .article-meta {
+            font-size: 12px;
+            color: var(--color-teal);
+            font-family: var(--font-mono);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .article-header h1 {
+            font-size: 36px;
+            font-weight: 800;
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+            color: var(--color-text);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .article-subtitle {
+            font-size: 18px;
+            color: var(--color-text-secondary);
+            line-height: 1.7;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .article-byline {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--color-text-muted);
+            flex-wrap: wrap;
+        }
+
+        .byline-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: top center;
+            border: 1px solid var(--color-border);
+            flex-shrink: 0;
+        }
+
+        .byline-sep { color: var(--color-border); }
+
+        /* ── tl;dr ── */
+        .article-tldr {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-left: 3px solid var(--color-teal);
+            border-radius: 0 10px 10px 0;
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .tldr-label {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--color-teal);
+            background-color: var(--color-teal-light);
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .article-tldr p {
+            font-size: 15px;
+            color: var(--color-text-secondary);
+            line-height: 1.7;
+            margin: 0;
+        }
+
+        /* ── Body typography ── */
+        .article-body {
+            max-width: 720px;
+            margin: 0 auto;
+            font-size: 16px;
+            line-height: 1.85;
+            color: var(--color-text-secondary);
+        }
+
+        .article-body p { margin-bottom: var(--spacing-lg); }
+
+        .article-body h2 {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--color-text);
+            margin: var(--spacing-2xl) 0 var(--spacing-md);
+            letter-spacing: -0.3px;
+            padding-bottom: var(--spacing-xs);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .article-body h3 {
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--color-accent);
+            margin: var(--spacing-xl) 0 var(--spacing-md);
+            letter-spacing: -0.2px;
+        }
+
+        .article-body ul, .article-body ol {
+            margin: var(--spacing-md) 0 var(--spacing-lg);
+            padding-left: var(--spacing-lg);
+        }
+
+        .article-body li {
+            margin-bottom: var(--spacing-md);
+            line-height: 1.7;
+        }
+
+        .article-body strong { color: var(--color-text); font-weight: 600; }
+
+        .article-body code {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            background-color: var(--color-surface-alt);
+            color: var(--color-teal);
+            padding: 2px 7px;
+            border-radius: 4px;
+            border: 1px solid var(--color-border);
+        }
+
+        /* ── Code block — highlight.js takes over, just set the wrapper ── */
+        .article-body pre {
+            margin: var(--spacing-lg) 0 var(--spacing-xl);
+            border-radius: 10px;
+            border: 1px solid var(--color-border);
+            overflow-x: auto;
+        }
+
+        .article-body pre code {
+            font-family: var(--font-mono);
+            font-size: 13.5px;
+            line-height: 1.7;
+            background: none;
+            border: none;
+            padding: var(--spacing-lg);
+            color: inherit;
+            display: block;
+        }
+
+        .article-body blockquote {
+            border-left: 3px solid var(--color-accent);
+            margin: var(--spacing-lg) 0;
+            padding: var(--spacing-md) var(--spacing-lg);
+            background-color: var(--color-surface);
+            border-radius: 0 8px 8px 0;
+        }
+
+        .article-body blockquote p {
+            margin: 0 !important;
+            color: var(--color-text);
+            font-style: italic;
+            font-size: 15px;
+        }
+
+        .article-body hr {
+            border: none;
+            border-top: 1px solid var(--color-border);
+            margin: var(--spacing-2xl) 0;
+        }
+
+        /* ── Figures ── */
+        .article-figure {
+            margin: var(--spacing-xl) 0 var(--spacing-2xl);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: var(--color-surface);
+        }
+
+        .article-figure img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .article-figure figcaption {
+            padding: var(--spacing-md) var(--spacing-lg);
+            font-size: 13px;
+            color: var(--color-text-muted);
+            line-height: 1.5;
+            border-top: 1px solid var(--color-border);
+            font-style: italic;
+        }
+
+        /* ── Ack table ── */
+        .ack-table {
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: var(--spacing-lg) 0 var(--spacing-xl);
+            font-size: 14px;
+        }
+
+        .ack-row {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr 2fr;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .ack-row:last-child { border-bottom: none; }
+
+        .ack-header {
+            background-color: var(--color-surface);
+            font-size: 11px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--color-text-muted);
+        }
+
+        .ack-row span {
+            padding: 10px 14px;
+            color: var(--color-text-secondary);
+            border-right: 1px solid var(--color-border);
+        }
+
+        .ack-row span:last-child { border-right: none; }
+
+        .state-acked  { color: #4ade80 !important; font-weight: 600; }
+        .state-available { color: var(--color-teal) !important; font-weight: 600; }
+        .state-archived  { color: #f87171 !important; font-weight: 600; }
+
+        /* ── Footer back link ── */
+        .article-footer-nav {
+            max-width: 720px;
+            margin: var(--spacing-2xl) auto 0;
+            padding-top: var(--spacing-xl);
+            border-top: 1px solid var(--color-border);
+        }
+
+        /* ── Mobile ── */
+        @media (max-width: 768px) {
+            .article-header h1 { font-size: 26px; }
+            .article-subtitle  { font-size: 15px; }
+            .article-body { font-size: 15px; line-height: 1.8; }
+            .article-body h2 { font-size: 22px; }
+            .article-body h3 { font-size: 17px; }
+            .article-body pre code { font-size: 12px; padding: var(--spacing-md); }
+            .ack-row { grid-template-columns: 1fr 1fr; }
+            .ack-row span:nth-child(3) { grid-column: 1 / -1; border-right: none; border-top: 1px solid var(--color-border); }
+        }
+    </style>
+
+    <script>
+        // Syntax highlighting
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('pre code').forEach(function(block) {
+                hljs.highlightElement(block);
+            });
+        });
+
+        // Nav toggle
+        (function() {
+            var toggle = document.querySelector('.nav-toggle');
+            var menu = document.getElementById('nav-menu');
+            if (!toggle || !menu) return;
+            toggle.addEventListener('click', function() {
+                var open = menu.classList.toggle('is-open');
+                toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                toggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+            });
+            document.addEventListener('click', function(e) {
+                if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+                    menu.classList.remove('is-open');
+                    toggle.setAttribute('aria-expanded', 'false');
+                    toggle.setAttribute('aria-label', 'Open navigation menu');
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

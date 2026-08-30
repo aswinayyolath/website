@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="We built a working prototype of Apache Kafka distributed across three independent Kubernetes clusters using Strimzi, Submariner, and Cilium, achieving zero-downtime failover when an entire cluster goes down.">
+    <title>We Proved Multi-Cluster Kafka Works on Kubernetes — Aswin</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/properties.min.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="../index.html" class="logo">
+                <img src="../image/me.jpeg" alt="Aswin" class="logo-avatar">
+                <span>aswin</span>
+            </a>
+            <button class="nav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="nav-menu">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <rect y="3" width="22" height="2" rx="1" fill="currentColor"/>
+                    <rect y="10" width="22" height="2" rx="1" fill="currentColor"/>
+                    <rect y="17" width="22" height="2" rx="1" fill="currentColor"/>
+                </svg>
+            </button>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../articles.html">Articles</a></li>
+                <li><a href="../projects.html">Projects</a></li>
+                <li><a href="../talks.html">Talks</a></li>
+                <li><a href="../about.html">About</a></li>
+                <li><a href="../contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Article -->
+    <article class="article-page">
+        <div class="container">
+
+            <!-- Header -->
+            <header class="article-header">
+                <p class="article-meta">Kafka · Kubernetes · May 11, 2026</p>
+                <h1>We Proved Multi-Cluster Kafka Works on Kubernetes… Here's Everything We Learned</h1>
+                <p class="article-subtitle">We built a working prototype of Apache Kafka distributed across three independent Kubernetes clusters using Strimzi, Submariner, and Cilium, achieving zero-downtime failover when an entire cluster goes down.</p>
+                <div class="article-byline">
+                    <img src="../image/me.jpeg" alt="Aswin" class="byline-avatar">
+                    <span>Aswin A</span>
+                    <span class="byline-sep">·</span>
+                    <span>Advisory Staff Software Engineer @ IBM</span>
+                    <span class="byline-sep">·</span>
+                    <span>9 min read</span>
+                </div>
+            </header>
+
+            <!-- Hero image -->
+            <div class="article-hero-image">
+                <img src="image/stretch-cluster.png" alt="Kafka and Kubernetes logos glowing in a datacenter — multi-cluster stretch architecture">
+            </div>
+
+            <!-- Article body -->
+            <div class="article-body">
+
+                <div class="article-tldr">
+                    <span class="tldr-label">tl;dr</span>
+                    <p>We built a working prototype of Apache Kafka distributed across three independent Kubernetes clusters using Strimzi, Submariner, and Cilium, achieving zero-downtime failover when an entire cluster goes down. This post covers the architecture, the hard problems, the test results, and the patterns that apply beyond Kafka.</p>
+                    <p>I would like to sincerely thank <strong>Rohananilkumar</strong>, who worked alongside me to get this done. We worked through it together day in and day out for almost two years, navigating all the hard tides along the way.</p>
+                </div>
+
+                <h2>Why This Problem Matters</h2>
+
+                <p>Apache Kafka has become the backbone of real-time data infrastructure, but its Kubernetes deployment model has a hidden assumption baked in: everything runs in one cluster.</p>
+
+                <p>When that cluster goes down — and at scale, it will — your entire Kafka deployment goes with it. MirrorMaker 2 gives you asynchronous replication to a second cluster, but it's not seamless. You get eventual consistency, not strong durability. You get failover with downtime, not transparent continuity.</p>
+
+                <p>The question I wanted to answer was: can a single logical Kafka cluster span multiple independent Kubernetes clusters, each with its own control plane, so that losing one cluster entirely doesn't bring Kafka down?</p>
+
+                <p>This is the <strong>stretch cluster pattern</strong>, borrowed from how databases like Cassandra distribute across data centers… applied to Kafka on Kubernetes. Nobody had done it with Strimzi (CNCF Incubating) before. We decided to find out if it was possible.</p>
+
+                <p>I presented this work at <strong>StrimziCon 2025</strong> and <strong>Confluent Current 2025</strong>. A video walkthrough is also available on YouTube.</p>
+
+                <h2>The Architecture</h2>
+
+                <h3>Why KRaft Changed Everything</h3>
+
+                <p>This project became feasible specifically because of Apache Kafka's KRaft mode. ZooKeeper's operational model made cross-cluster deployments essentially impossible — you would have been fighting two distributed consensus systems across a high-latency link. KRaft's integrated Raft-based consensus protocol gave us a clean path.</p>
+
+                <h3>The Three-Cluster Design</h3>
+
+                <pre><code class="language-plaintext">Central Cluster (Cluster A)
+├── Strimzi Cluster Operator (manages all three clusters)
+├── Kafka CR + KafkaNodePool CRs (the source of truth)
+├── Brokers: IDs 0, 1, 2
+└── KRaft Controllers: IDs 3, 4, 5
+
+Remote Cluster B
+├── Local Strimzi Operator (reconciles StrimziPodSets only)
+├── Brokers: IDs 6, 7, 8
+└── KRaft Controllers: IDs 9, 10, 11
+
+Remote Cluster C
+├── Local Strimzi Operator (reconciles StrimziPodSets only)
+├── Brokers: IDs 12, 13, 14
+└── KRaft Controllers: IDs 15, 16, 17</code></pre>
+
+                <p><strong>Central control plane model:</strong> Only one cluster runs the full Strimzi Cluster Operator with the Kafka and KafkaNodePool CRs. Remote clusters run a constrained Strimzi instance that only reconciles StrimziPodSets — it never touches the cluster-level configuration. This avoids split-brain in the operator layer.</p>
+
+                <h3>The Plugin Architecture</h3>
+
+                <p>Different environments have different networking constraints, so we built a plugin system for the cross-cluster connectivity layer. The plugin interface is intentionally minimal — each plugin implements address resolution and service lifecycle management. Adding a new networking backend is straightforward.</p>
+
+                <h2>The Hard Problems (and How We Solved Them)</h2>
+
+                <h3>Problem 1: Cross-Cluster DNS</h3>
+
+                <p>Kafka's <code>advertised.listeners</code> is where everything starts. Each broker advertises the address that clients and other brokers use to reach it. In a single-cluster deployment, this is a Kubernetes service DNS name. Across clusters, you need an address that resolves everywhere.</p>
+
+                <p>The Multi-Cluster Services API (KEP-1645) defines <code>.clusterset.local</code> as the DNS namespace for cross-cluster services. We implemented a naming scheme that generates stable cross-cluster DNS names:</p>
+
+                <pre><code class="language-plaintext">&lt;pod-name&gt;.&lt;cluster-id&gt;.&lt;service&gt;.&lt;namespace&gt;.svc.clusterset.local</code></pre>
+
+                <p>The Strimzi operator was modified to generate these names when stretch cluster mode is enabled, and to populate <code>advertised.listeners</code> with them instead of standard in-cluster DNS names.</p>
+
+                <p>The tricky part: Strimzi generates broker addresses during reconciliation, before the pods exist. The DNS names need to be deterministic and consistent across reconciliation cycles. We added a <code>cluster-alias</code> annotation to KafkaNodePool resources that provides the stable cluster identifier:</p>
+
+                <pre><code class="language-yaml">apiVersion: kafka.strimzi.io/v1
+kind: KafkaNodePool
+metadata:
+  name: broker-pool-cluster-a
+  labels:
+    strimzi.io/cluster: my-stretch-cluster
+  annotations:
+    strimzi.io/stretch-cluster-alias: "cluster-a"
+spec:
+  replicas: 3
+  roles:
+    - broker
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: persistent-claim
+        size: 100Gi
+        deleteClaim: false</code></pre>
+
+                <h3>Problem 2: TLS Certificate SANs</h3>
+
+                <p>Strimzi's internal certificate authority generates TLS certificates for all broker-to-broker and controller-to-controller communication. These certificates need Subject Alternative Names (SANs) that cover every address a broker might be reached at, including the cross-cluster DNS names.</p>
+
+                <p>The standard Strimzi certificate generation only knew about in-cluster addresses. We extended it to include <code>.clusterset.local</code> SANs for every broker in every remote cluster.</p>
+
+                <p>This is also directly relevant to open issue <strong>#11291</strong> about removing OpenSSL from the certificate manager — the custom SAN generation logic I implemented gives practical insight into exactly what the Java Security framework replacement needs to handle.</p>
+
+                <h3>Problem 3: KRaft Controller Quorum Across High-Latency Links</h3>
+
+                <p>KRaft's Raft consensus protocol is sensitive to latency. In a single datacenter, controller-to-controller communication happens in sub-millisecond time. Across clusters, you're looking at 2–10ms depending on geography.</p>
+
+                <p>The <code>controller.quorum.voters</code> configuration needs all controller addresses specified statically at startup. We configured this with the full cross-cluster DNS names for all nine controllers:</p>
+
+                <pre><code class="language-properties">controller.quorum.voters=\
+  3@controller-3.cluster-a.controllers.kafka.svc.clusterset.local:9090,\
+  4@controller-4.cluster-a.controllers.kafka.svc.clusterset.local:9090,\
+  5@controller-5.cluster-a.controllers.kafka.svc.clusterset.local:9090,\
+  9@controller-9.cluster-b.controllers.kafka.svc.clusterset.local:9090,\
+  10@controller-10.cluster-b.controllers.kafka.svc.clusterset.local:9090,\
+  11@controller-11.cluster-b.controllers.kafka.svc.clusterset.local:9090,\
+  15@controller-15.cluster-c.controllers.kafka.svc.clusterset.local:9090,\
+  16@controller-16.cluster-c.controllers.kafka.svc.clusterset.local:9090,\
+  17@controller-17.cluster-c.controllers.kafka.svc.clusterset.local:9090</code></pre>
+
+                <p>The tested configurations maintained quorum reliably at &lt;10ms inter-cluster latency. Beyond ~50ms, leader election stabilisation time increases noticeably — worth knowing before planning a geographically distributed deployment.</p>
+
+                <h3>Problem 4: Operator Resource Lifecycle Across Clusters</h3>
+
+                <p>The central Strimzi operator needs to create, update, and delete resources in remote clusters without having administrative access to those clusters' Kafka resources. We implemented this using scoped kubeconfig secrets: the central operator has access only to the specific namespaces in remote clusters where Kafka resources live.</p>
+
+                <p>The operator tracks remote resources using a finalizer-based lifecycle:</p>
+
+                <pre><code class="language-yaml"># Annotation added to all remote resources
+annotations:
+  strimzi.io/stretch-cluster-alias: "cluster-b"
+  strimzi.io/managed-by-central: "my-cluster"</code></pre>
+
+                <p>When the central Kafka CR is deleted, the finalizer ensures remote StrimziPodSets are cleaned up before the central resources are removed.</p>
+
+                <h2>What the Tests Showed</h2>
+
+                <p>We ran three categories of failure tests. These are real results from the test environment — not simulations.</p>
+
+                <h3>Broker Leader Failover</h3>
+
+                <p>Setup: 18-partition topic, replication factor 9 (each partition replicated across all 9 brokers), producers running continuously at 1,000 msg/sec.</p>
+
+                <h3>Controller Quorum Failover</h3>
+
+                <p>Starting state: 9 controllers across 3 clusters, leader = Controller 5 (Cluster A).</p>
+
+                <div class="test-results">
+                    <div class="test-row">
+                        <span class="test-action">Delete Controller 5</span>
+                        <span class="test-arrow">→</span>
+                        <span class="test-result">Leader: Controller 4 (Cluster A) — election: <strong>~800ms</strong></span>
+                    </div>
+                    <div class="test-row">
+                        <span class="test-action">Delete Controller 4</span>
+                        <span class="test-arrow">→</span>
+                        <span class="test-result">Leader: Controller 3 (Cluster A) — election: <strong>~900ms</strong></span>
+                    </div>
+                    <div class="test-row">
+                        <span class="test-action">Delete Controller 3</span>
+                        <span class="test-arrow">→</span>
+                        <span class="test-result">Leader: Controller 9 (Cluster B) — election: <strong>~1.2s</strong></span>
+                    </div>
+                </div>
+
+                <p>Cross-cluster leader election worked. The ~1.2s election time when the quorum majority shifted to a remote cluster is within KRaft's expected operating range.</p>
+
+                <h3>Full Cluster Failure</h3>
+
+                <p>The scenario that matters most: <strong>all pods in Cluster A are terminated simultaneously.</strong></p>
+
+                <blockquote>
+                    <p>Kafka remained operational. Producers and consumers connected to the bootstrap addresses of Clusters B and C continued without interruption. The 6 remaining brokers covered all partitions. The 6 remaining controllers maintained quorum and elected a new leader within 1.5 seconds.</p>
+                </blockquote>
+
+                <p>This is the result that proves the core thesis: a Kafka cluster can survive the complete loss of one Kubernetes cluster, transparently, with no client reconfiguration.</p>
+
+                <h3>Network Performance: Submariner vs Cilium</h3>
+
+                <p>For latency-sensitive deployments, Cilium's eBPF approach measurably outperforms the userspace WireGuard path in Submariner. For most Kafka workloads the difference is not material, but it's worth knowing.</p>
+
+                <h2>Cross-Community Engagement</h2>
+
+                <p>This project required working simultaneously with four CNCF communities — something I'd encourage anyone building at the intersection of projects to do early and openly.</p>
+
+                <ul>
+                    <li><strong>Strimzi (CNCF Incubating):</strong> I submitted two formal proposals to the strimzi/proposals repository. The feedback from maintainers — particularly around operator complexity and testing surface — shaped the plugin architecture significantly. Even when a proposal doesn't get merged, the review process forces you to think through failure modes you'd otherwise miss.</li>
+                    <li><strong>Submariner (CNCF Sandbox):</strong> The Submariner team's guidance on ServiceExport/ServiceImport patterns and ClusterSet DNS was essential. Working through the gap between the MCS API specification and Submariner's actual implementation taught me more about the state of multi-cluster networking than any documentation could.</li>
+                    <li><strong>Cilium (CNCF Graduated):</strong> Cilium's ClusterMesh gives you the same MCS-compatible networking with an eBPF data path. Testing both gave me a side-by-side comparison that wouldn't be possible otherwise. The Cilium community's documentation on eBPF-accelerated cross-cluster routing is excellent.</li>
+                    <li><strong>Fabric8 Kubernetes Client:</strong> Building multi-cluster client patterns in Java, managing multiple kubeconfig contexts, handling credential rotation, scoping API access per cluster — was not well documented. The patterns I developed are reusable for any Java operator that needs to manage resources across cluster boundaries.</li>
+                </ul>
+
+                <h2>Patterns That Apply Beyond Kafka</h2>
+
+                <p>The architectural patterns from this project aren't Kafka-specific. If you're building or operating other stateful distributed systems on Kubernetes, these are directly applicable.</p>
+
+                <ul>
+                    <li><strong>Central control plane, distributed data plane:</strong> One operator owns the desired state. Remote clusters only reconcile the resources the central operator pushes to them. This prevents split-brain at the operator layer without requiring complex leader election between operator instances.</li>
+                    <li><strong>Deterministic cross-cluster naming at reconciliation time:</strong> Any operator that needs to reference resources across clusters needs stable, pre-computable names. Don't generate names dynamically at runtime; the cluster annotation pattern gives you names you can compute before the resource exists.</li>
+                    <li><strong>MCS API for service discovery:</strong> The <code>.clusterset.local</code> DNS namespace is emerging as the standard for cross-cluster service discovery. If you're building something that needs to work across clusters today, design your service discovery around this, even if you implement it with NodePort or LoadBalancer as a fallback.</li>
+                    <li><strong>Scoped cross-cluster credentials:</strong> Don't give your central operator cluster-admin on remote clusters. Generate scoped kubeconfigs that grant access only to the specific namespace and resources the operator needs to manage. Use finalizers to ensure cleanup ordering.</li>
+                    <li><strong>Pluggable networking backends:</strong> The cross-cluster networking technology changes faster than your application logic. Abstracting it behind a plugin interface means you can swap Submariner for Cilium (or for a future MCS implementation) without touching your core operator code.</li>
+                </ul>
+
+                <h2>What's Available</h2>
+
+                <p>All code and documentation from this project are publicly available:</p>
+
+                <div class="resources-table">
+                    <div class="resources-row resources-header">
+                        <span>Resource</span>
+                        <span>Link</span>
+                    </div>
+                    <div class="resources-row">
+                        <span class="resource-name">Documentation</span>
+                        <span><a href="https://aswinayyolath.github.io/stretch-kafka-docs" target="_blank" rel="noopener">aswinayyolath.github.io/stretch-kafka-docs ↗</a></span>
+                    </div>
+                    <div class="resources-row">
+                        <span class="resource-name">Operator fork</span>
+                        <span><a href="https://github.com/aswinayyolath/strimzi-kafka-operator/tree/48-migration" target="_blank" rel="noopener">github.com/aswinayyolath/strimzi-kafka-operator ↗</a></span>
+                    </div>
+                    <div class="resources-row">
+                        <span class="resource-name">MCS Plugin</span>
+                        <span><a href="https://github.com/aswinayyolath/strimzi-stretch-mcs-plugin" target="_blank" rel="noopener">github.com/aswinayyolath/strimzi-stretch-mcs-plugin ↗</a></span>
+                    </div>
+                    <div class="resources-row">
+                        <span class="resource-name">NodePort Plugin</span>
+                        <span><a href="https://github.com/aswinayyolath/strimzi-stretch-nodeport-plugin" target="_blank" rel="noopener">github.com/aswinayyolath/strimzi-stretch-nodeport-plugin ↗</a></span>
+                    </div>
+                    <div class="resources-row">
+                        <span class="resource-name">LoadBalancer Plugin</span>
+                        <span><a href="https://github.com/aswinayyolath/strimzi-stretch-loadbalancer-plugin" target="_blank" rel="noopener">github.com/aswinayyolath/strimzi-stretch-loadbalancer-plugin ↗</a></span>
+                    </div>
+                    <div class="resources-row">
+                        <span class="resource-name">YouTube walkthrough</span>
+                        <span><a href="https://www.youtube.com/watch?v=NEPgtXD6voA" target="_blank" rel="noopener">Strimzi Kafka Stretch Cluster Prototype ↗</a></span>
+                    </div>
+                </div>
+
+                <h2>The State of Multi-Cluster Kafka</h2>
+
+                <p>The Strimzi community's decision not to adopt this pattern into the main operator at this time is a reasonable one — the operational surface is real and the use case needs more production validation before it belongs in the core. That doesn't change what the prototype demonstrated.</p>
+
+                <p>Multi-cluster Kafka on Kubernetes is <strong>technically feasible today</strong>. The networking primitives (MCS API, Submariner, Cilium ClusterMesh) are mature enough. KRaft has removed the ZooKeeper constraint. The operator patterns are worked out.</p>
+
+                <p>What's needed now is production deployments that validate the operational model and build the community knowledge base around it. If you're running Kafka on Kubernetes at scale and thinking about cluster-level resilience, the code above is a working starting point.</p>
+
+                <p>If you're working on multi-cluster architectures — Kafka or otherwise — I'd genuinely like to hear from you. Find me on CNCF Slack in the <code>#strimzi</code> channel, or open an issue on any of the repositories above.</p>
+
+                <hr>
+
+                <h2>Acknowledgements</h2>
+
+                <p>To the Strimzi maintainers who reviewed the proposals with genuine technical depth, especially the feedback that led to the plugin architecture. To the Submariner and Cilium communities for patient answers to questions that were sometimes very specific. And to everyone at StrimziCon 2025 who engaged with this work and pushed back on the parts that weren't fully thought through.</p>
+
+            </div>
+
+            <!-- Back link -->
+            <div class="article-footer-nav">
+                <a href="../articles.html" class="read-more">← Back to all articles</a>
+            </div>
+
+        </div>
+    </article>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2025 Aswin. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="../privacy.html">Privacy</a>
+                    <span>·</span>
+                    <a href="../contact.html">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+        /* ── Article page layout ── */
+        .article-page {
+            padding: var(--spacing-2xl) 0 var(--spacing-3xl);
+        }
+
+        .article-header {
+            max-width: 720px;
+            margin: 0 auto var(--spacing-lg);
+            padding-bottom: var(--spacing-xl);
+            border-bottom: none;
+        }
+
+        /* ── Hero image ── */
+        .article-hero-image {
+            max-width: 720px;
+            margin: 0 auto var(--spacing-2xl);
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid var(--color-border);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px var(--color-border);
+            position: relative;
+        }
+
+        .article-hero-image::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to bottom,
+                transparent 55%,
+                rgba(15, 17, 23, 0.45) 100%
+            );
+            pointer-events: none;
+            border-radius: 14px;
+        }
+
+        .article-hero-image img {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-height: 420px;
+            object-fit: cover;
+            object-position: center 30%;
+        }
+
+        .article-header .article-meta {
+            font-size: 12px;
+            color: var(--color-teal);
+            font-family: var(--font-mono);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .article-header h1 {
+            font-size: 36px;
+            font-weight: 800;
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+            color: var(--color-text);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .article-subtitle {
+            font-size: 18px;
+            color: var(--color-text-secondary);
+            line-height: 1.7;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .article-byline {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--color-text-muted);
+            flex-wrap: wrap;
+        }
+
+        .byline-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: top center;
+            border: 1px solid var(--color-border);
+            flex-shrink: 0;
+        }
+
+        .byline-sep {
+            color: var(--color-border);
+        }
+
+        /* ── tl;dr box ── */
+        .article-tldr {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-left: 3px solid var(--color-teal);
+            border-radius: 0 10px 10px 0;
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .tldr-label {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--color-teal);
+            background-color: var(--color-teal-light);
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .article-tldr p {
+            font-size: 15px;
+            color: var(--color-text-secondary);
+            line-height: 1.7;
+            margin-bottom: var(--spacing-sm) !important;
+        }
+
+        .article-tldr p:last-child {
+            margin-bottom: 0 !important;
+        }
+
+        /* ── Article body typography ── */
+        .article-body {
+            max-width: 720px;
+            margin: 0 auto;
+            font-size: 16px;
+            line-height: 1.85;
+            color: var(--color-text-secondary);
+        }
+
+        .article-body p {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .article-body h2 {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--color-text);
+            margin: var(--spacing-2xl) 0 var(--spacing-md);
+            letter-spacing: -0.3px;
+            padding-bottom: var(--spacing-xs);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .article-body h3 {
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--color-accent);
+            margin: var(--spacing-xl) 0 var(--spacing-md);
+            letter-spacing: -0.2px;
+        }
+
+        .article-body ul,
+        .article-body ol {
+            margin: var(--spacing-md) 0 var(--spacing-lg);
+            padding-left: var(--spacing-lg);
+        }
+
+        .article-body li {
+            margin-bottom: var(--spacing-md);
+            line-height: 1.7;
+        }
+
+        .article-body strong {
+            color: var(--color-text);
+            font-weight: 600;
+        }
+
+        .article-body a {
+            color: var(--color-teal);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            text-decoration-color: var(--color-teal-light);
+        }
+
+        .article-body a:hover {
+            color: var(--color-accent);
+            text-decoration-color: var(--color-accent-light);
+        }
+
+        .article-body code {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            background-color: var(--color-surface-alt);
+            color: var(--color-teal);
+            padding: 2px 7px;
+            border-radius: 4px;
+            border: 1px solid var(--color-border);
+        }
+
+        .article-body pre {
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: var(--spacing-lg) 0 var(--spacing-xl);
+            padding: 0;
+        }
+
+        .article-body pre code {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.7;
+            padding: var(--spacing-lg) !important;
+            border-radius: 10px;
+            display: block;
+        }
+
+        .article-body blockquote {
+            border-left: 3px solid var(--color-accent);
+            margin: var(--spacing-lg) 0;
+            padding: var(--spacing-md) var(--spacing-lg);
+            background-color: var(--color-surface);
+            border-radius: 0 8px 8px 0;
+        }
+
+        .article-body blockquote p {
+            margin: 0 !important;
+            color: var(--color-text);
+            font-style: italic;
+            font-size: 15px;
+        }
+
+        .article-body hr {
+            border: none;
+            border-top: 1px solid var(--color-border);
+            margin: var(--spacing-2xl) 0;
+        }
+
+        /* ── Resources table ── */
+        .resources-table {
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: var(--spacing-lg) 0 var(--spacing-xl);
+            font-size: 14px;
+        }
+
+        .resources-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .resources-row:last-child {
+            border-bottom: none;
+        }
+
+        .resources-row:nth-child(even) {
+            background-color: rgba(255,255,255,0.02);
+        }
+
+        .resources-header {
+            background-color: var(--color-surface);
+            font-size: 11px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--color-text-muted);
+        }
+
+        .resources-row span {
+            padding: 11px 16px;
+            color: var(--color-text-secondary);
+            border-right: 1px solid var(--color-border);
+            line-height: 1.5;
+        }
+
+        .resources-row span:last-child {
+            border-right: none;
+        }
+
+        .resource-name {
+            font-weight: 600;
+            color: var(--color-text) !important;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .resource-tag {
+            font-size: 11px;
+            font-family: var(--font-mono);
+            font-weight: 600;
+            color: var(--color-teal);
+            background-color: var(--color-teal-light);
+            border: 1px solid rgba(45,212,191,0.2);
+            padding: 1px 7px;
+            border-radius: 20px;
+        }
+
+        .resources-row a {
+            color: var(--color-teal);
+            text-decoration: none;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            word-break: break-all;
+        }
+
+        .resources-row a:hover {
+            color: var(--color-accent);
+            text-decoration: underline;
+        }
+
+        /* ── Test results table ── */
+        .test-results {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
+            padding: var(--spacing-md);
+            margin: var(--spacing-lg) 0 var(--spacing-xl);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .test-row {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-sm) var(--spacing-md);
+            background-color: var(--color-bg);
+            border-radius: 6px;
+            font-size: 14px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .test-action {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--color-text-muted);
+            white-space: nowrap;
+        }
+
+        .test-arrow {
+            color: var(--color-teal);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .test-result {
+            color: var(--color-text-secondary);
+            font-size: 14px;
+        }
+
+        .test-result strong {
+            color: var(--color-accent);
+        }
+
+        /* ── Footer back link ── */
+        .article-footer-nav {
+            max-width: 720px;
+            margin: var(--spacing-2xl) auto 0;
+            padding-top: var(--spacing-xl);
+            border-top: 1px solid var(--color-border);
+        }
+
+        /* ── Mobile ── */
+        @media (max-width: 768px) {
+            .article-hero-image {
+                border-radius: 10px;
+                margin-bottom: var(--spacing-xl);
+            }
+
+            .article-hero-image img {
+                max-height: 220px;
+            }
+
+            .article-header h1 {
+                font-size: 26px;
+            }
+
+            .article-subtitle {
+                font-size: 15px;
+            }
+
+            .article-body {
+                font-size: 15px;
+                line-height: 1.8;
+            }
+
+            .article-body h2 {
+                font-size: 22px;
+            }
+
+            .article-body h3 {
+                font-size: 17px;
+            }
+
+            .article-body pre code {
+                font-size: 12px;
+                padding: var(--spacing-md) !important;
+            }
+
+            .resources-table {
+                font-size: 13px;
+            }
+
+            .resources-row {
+                grid-template-columns: 1fr;
+            }
+
+            .resources-row span {
+                border-right: none;
+                border-bottom: 1px solid var(--color-border);
+                padding: 8px 14px;
+            }
+
+            .resources-row span:last-child {
+                border-bottom: none;
+            }
+
+            .resources-header {
+                display: none;
+            }
+
+            .resource-name {
+                font-size: 12px;
+                color: var(--color-text-muted) !important;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+            }
+
+            .resources-row a {
+                font-size: 12px;
+            }
+
+            .test-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .article-byline {
+                gap: 6px;
+            }
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('pre code').forEach(function(block) {
+                hljs.highlightElement(block);
+            });
+        });
+
+        (function() {
+            var toggle = document.querySelector('.nav-toggle');
+            var menu = document.getElementById('nav-menu');
+            if (!toggle || !menu) return;
+            toggle.addEventListener('click', function() {
+                var open = menu.classList.toggle('is-open');
+                toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                toggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+            });
+            document.addEventListener('click', function(e) {
+                if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+                    menu.classList.remove('is-open');
+                    toggle.setAttribute('aria-expanded', 'false');
+                    toggle.setAttribute('aria-label', 'Open navigation menu');
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

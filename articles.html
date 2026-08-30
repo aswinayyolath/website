@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Technical articles on Apache Kafka, Kubernetes, Distributed Systems and Science">
+    <title>Articles - Aswin</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <img src="image/me.jpeg" alt="Aswin" class="logo-avatar">
+                <span>aswin</span>
+            </a>
+            <button class="nav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="nav-menu">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <rect y="3" width="22" height="2" rx="1" fill="currentColor"/>
+                    <rect y="10" width="22" height="2" rx="1" fill="currentColor"/>
+                    <rect y="17" width="22" height="2" rx="1" fill="currentColor"/>
+                </svg>
+            </button>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="articles.html">Articles</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="talks.html">Talks</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Articles</h1>
+            <p>Deep dives on Kafka, Kubernetes, distributed systems — and the wonders of the universe.</p>
+        </div>
+    </section>
+
+    <!-- Filter Bar -->
+    <section class="filter-bar">
+        <div class="container">
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="kafka-kubernetes">Kafka &amp; Kubernetes</button>
+                <button class="filter-btn" data-filter="science">Science</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Articles -->
+    <section class="articles-section">
+        <div class="container">
+            <div class="articles-list" id="articles-list">
+
+                <!-- Kafka & Kubernetes articles -->
+                <article class="article-card article-card-with-image" data-category="kafka-kubernetes">
+                    <a href="articles/multi-cluster-kafka-kubernetes.html" class="article-card-thumb" tabindex="-1" aria-hidden="true">
+                        <img src="articles/image/stretch-cluster.png" alt="">
+                    </a>
+                    <div class="article-card-body">
+                        <p class="article-meta">Kafka · Kubernetes · May 2026</p>
+                        <h3><a href="articles/multi-cluster-kafka-kubernetes.html">We Proved Multi-Cluster Kafka Works on Kubernetes… Here's Everything We Learned</a></h3>
+                        <p>A hands-on account of running Apache Kafka across multiple Kubernetes clusters — the architecture decisions, the failures we hit, and the hard-won lessons that made it production-ready.</p>
+                        <a href="articles/multi-cluster-kafka-kubernetes.html" class="read-more">Read article →</a>
+                    </div>
+                </article>
+
+                <article class="article-card article-card-with-image" data-category="kafka-kubernetes">
+                    <a href="articles/diskless-kafka-cloud-native-future.html" class="article-card-thumb" tabindex="-1" aria-hidden="true">
+                        <img src="articles/image/diskless-kafka.png" alt="">
+                    </a>
+                    <div class="article-card-body">
+                        <p class="article-meta">Kafka · Cloud-Native · Architecture · May 7, 2025</p>
+                        <h3><a href="articles/diskless-kafka-cloud-native-future.html">Diskless Kafka: The Cloud-Native Future of Event Streaming</a></h3>
+                        <p>KIP-1150 proposes eliminating local disk storage from Kafka brokers entirely — replacing it with pluggable cloud object storage. Here's what that means for how Kafka works, and why it matters.</p>
+                        <a href="articles/diskless-kafka-cloud-native-future.html" class="read-more">Read article →</a>
+                    </div>
+                </article>
+
+                <article class="article-card article-card-with-image" data-category="kafka-kubernetes">
+                    <a href="articles/kafka-queues-share-groups.html" class="article-card-thumb" tabindex="-1" aria-hidden="true">
+                        <img src="articles/image/thumbnail-for-kafka-queues.png" alt="">
+                    </a>
+                    <div class="article-card-body">
+                        <p class="article-meta">Kafka · KIP-932 · Share Groups · March 30, 2025</p>
+                        <h3><a href="articles/kafka-queues-share-groups.html">Ever Felt Like Kafka Could Do More? Let's Talk Queues.</a></h3>
+                        <p>Kafka 4.0 introduces Share Groups — bringing true queue-like semantics to Kafka. Multiple consumers per partition, per-record acknowledgements, and a state machine that handles retries gracefully.</p>
+                        <a href="articles/kafka-queues-share-groups.html" class="read-more">Read article →</a>
+                    </div>
+                </article>
+
+                <!-- Science coming soon card -->
+                <article class="article-card science-coming-soon" data-category="science">
+                    <div class="atom-canvas" aria-hidden="true">
+                        <div class="nucleus">
+                            <div class="nucleus-core"></div>
+                        </div>
+                        <div class="orbit orbit-1"><div class="electron e1"></div></div>
+                        <div class="orbit orbit-2"><div class="electron e2"></div></div>
+                        <div class="orbit orbit-3"><div class="electron e3"></div></div>
+                    </div>
+                    <div class="science-coming-soon-body">
+                        <span class="science-label">Science</span>
+                        <h3>The universe has my full attention.</h3>
+                        <p>Quantum mechanics, classical mechanics, relativity, mathematics — the first article is on its way. Stay curious.</p>
+                        <span class="coming-soon-badge">Coming soon</span>
+                    </div>
+                </article>
+
+            </div>
+
+            <!-- Empty state when filter has no results -->
+            <p class="no-results" id="no-results" style="display:none;">No articles in this category yet.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2025 Aswin. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="privacy.html">Privacy</a>
+                    <span>·</span>
+                    <a href="contact.html">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+        /* ── Page header ── */
+        .page-header {
+            padding: var(--spacing-2xl) 0;
+            background-color: var(--color-surface);
+            border-bottom: 1px solid var(--color-border);
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text);
+        }
+
+        .page-header p {
+            color: var(--color-text-secondary);
+            font-size: 15px;
+        }
+
+        /* ── Filter bar ── */
+        .filter-bar {
+            padding: var(--spacing-lg) 0;
+            background-color: var(--color-bg);
+            border-bottom: 1px solid var(--color-border);
+            position: sticky;
+            top: 56px;
+            z-index: 10;
+            backdrop-filter: blur(8px);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            font-size: 13px;
+            font-weight: 600;
+            font-family: var(--font-mono);
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--color-border);
+            background-color: transparent;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--color-text-muted);
+            color: var(--color-text);
+        }
+
+        .filter-btn.active {
+            background-color: var(--color-teal);
+            border-color: var(--color-teal);
+            color: #0f1117;
+        }
+
+        /* ── Articles list ── */
+        .articles-section {
+            padding: var(--spacing-2xl) 0;
+            background-color: var(--color-bg);
+        }
+
+        .article-card[data-category] {
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .article-card.hidden {
+            display: none;
+        }
+
+        .no-results {
+            color: var(--color-text-muted);
+            font-size: 14px;
+            padding: var(--spacing-xl) 0;
+            text-align: center;
+        }
+
+        /* ── Science coming soon card ── */
+        .science-coming-soon {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xl);
+            background: linear-gradient(135deg, #0d1117 0%, #0f172a 50%, #0d1117 100%);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 12px;
+            padding: var(--spacing-xl) !important;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.3) !important;
+            position: relative;
+            cursor: default;
+        }
+
+        .science-coming-soon::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 20% 50%, rgba(99,102,241,0.08) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        /* ── Atom animation ── */
+        .atom-canvas {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            flex-shrink: 0;
+        }
+
+        .nucleus {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 18px;
+            height: 18px;
+        }
+
+        .nucleus-core {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle, #a78bfa, #6366f1);
+            box-shadow: 0 0 12px rgba(99,102,241,0.8), 0 0 24px rgba(99,102,241,0.4);
+            animation: pulse-nucleus 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-nucleus {
+            0%, 100% { box-shadow: 0 0 12px rgba(99,102,241,0.8), 0 0 24px rgba(99,102,241,0.4); }
+            50%       { box-shadow: 0 0 20px rgba(99,102,241,1),   0 0 40px rgba(99,102,241,0.6); }
+        }
+
+        .orbit {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            border-radius: 50%;
+            border: 1px solid rgba(99,102,241,0.25);
+        }
+
+        .orbit-1 {
+            width: 60px;  height: 60px;
+            margin: -30px 0 0 -30px;
+            transform: rotateX(70deg) rotateZ(0deg);
+            animation: spin1 3s linear infinite;
+        }
+
+        .orbit-2 {
+            width: 90px;  height: 90px;
+            margin: -45px 0 0 -45px;
+            transform: rotateX(70deg) rotateZ(60deg);
+            animation: spin2 4.5s linear infinite;
+        }
+
+        .orbit-3 {
+            width: 124px; height: 124px;
+            margin: -62px 0 0 -62px;
+            transform: rotateX(70deg) rotateZ(120deg);
+            animation: spin3 6s linear infinite;
+        }
+
+        @keyframes spin1 { to { transform: rotateX(70deg) rotateZ(360deg); } }
+        @keyframes spin2 { to { transform: rotateX(70deg) rotateZ(420deg); } }
+        @keyframes spin3 { to { transform: rotateX(70deg) rotateZ(480deg); } }
+
+        .electron {
+            position: absolute;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            top: -3.5px;
+            left: 50%;
+            margin-left: -3.5px;
+            background: #a78bfa;
+            box-shadow: 0 0 6px rgba(167,139,250,0.9);
+        }
+
+        /* ── Science card body ── */
+        .science-coming-soon-body {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .science-label {
+            font-size: 11px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #a78bfa;
+        }
+
+        .science-coming-soon-body h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #f0f0ff;
+            line-height: 1.3;
+            margin: 0;
+            letter-spacing: -0.2px;
+        }
+
+        .science-coming-soon-body p {
+            font-size: 14px;
+            color: rgba(200,200,230,0.6);
+            line-height: 1.7;
+            margin: 0;
+        }
+
+        .coming-soon-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #a78bfa;
+            background: rgba(99,102,241,0.12);
+            border: 1px solid rgba(99,102,241,0.3);
+            padding: 4px 12px;
+            border-radius: 20px;
+            align-self: flex-start;
+        }
+
+        /* ── Mobile ── */
+        @media (max-width: 640px) {
+            .science-coming-soon {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--spacing-lg);
+            }
+
+            .atom-canvas {
+                width: 100px;
+                height: 100px;
+            }
+
+            .orbit-3 { width: 90px; height: 90px; margin: -45px 0 0 -45px; }
+            .orbit-2 { width: 66px; height: 66px; margin: -33px 0 0 -33px; }
+            .orbit-1 { width: 44px; height: 44px; margin: -22px 0 0 -22px; }
+        }
+    </style>
+
+    <script>
+        (function() {
+            // Nav toggle
+            var toggle = document.querySelector('.nav-toggle');
+            var menu = document.getElementById('nav-menu');
+            if (toggle && menu) {
+                toggle.addEventListener('click', function() {
+                    var open = menu.classList.toggle('is-open');
+                    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    toggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+                });
+                document.addEventListener('click', function(e) {
+                    if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+                        menu.classList.remove('is-open');
+                        toggle.setAttribute('aria-expanded', 'false');
+                        toggle.setAttribute('aria-label', 'Open navigation menu');
+                    }
+                });
+            }
+
+            // Category filter
+            var buttons = document.querySelectorAll('.filter-btn');
+            var cards   = document.querySelectorAll('#articles-list .article-card[data-category]');
+            var noResults = document.getElementById('no-results');
+
+            buttons.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var filter = this.dataset.filter;
+
+                    // Update active button
+                    buttons.forEach(function(b) { b.classList.remove('active'); });
+                    this.classList.add('active');
+
+                    // Show / hide cards
+                    var visible = 0;
+                    cards.forEach(function(card) {
+                        var match = filter === 'all' || card.dataset.category === filter;
+                        card.classList.toggle('hidden', !match);
+                        if (match) visible++;
+                    });
+
+                    noResults.style.display = visible === 0 ? 'block' : 'none';
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

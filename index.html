@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Aswin - Software Engineer focused on Apache Kafka, Kubernetes, and Distributed Systems">
+    <title>Aswin - Kafka & Kubernetes Engineer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <img src="image/me.jpeg" alt="Aswin" class="logo-avatar">
+                <span>aswin</span>
+            </a>
+            <button class="nav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="nav-menu">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <rect y="3" width="22" height="2" rx="1" fill="currentColor"/>
+                    <rect y="10" width="22" height="2" rx="1" fill="currentColor"/>
+                    <rect y="17" width="22" height="2" rx="1" fill="currentColor"/>
+                </svg>
+            </button>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="articles.html">Articles</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="talks.html">Talks</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Aswin</h1>
+            <p class="tagline">Software Engineer • Kafka • Kubernetes • Distributed Systems</p>
+            <p class="subtitle">I write about building, operating and troubleshooting distributed systems — with a focus on <strong>Apache Kafka</strong>, <strong>Kubernetes</strong> and cloud-native infrastructure.</p>
+            <p class="subtitle subtitle-wonder">In my world, the fusion of technology and the awe-inspiring beauty of the universe 🌎 is where the magic happens. By harnessing the power of technology and combining it with our inherent sense of wonder and curiosity, we can create remarkable innovations that propel humanity to new heights.</p>
+            
+            <div class="hero-buttons">
+                <a href="articles.html" class="btn btn-primary">Read my articles</a>
+                <a href="projects.html" class="btn btn-secondary">View my work</a>
+            </div>
+
+            <div class="social-links">
+                <a href="https://github.com/aswinayyolath" target="_blank">GitHub</a>
+                <span>·</span>
+                <a href="https://www.linkedin.com/in/aswin-a-133a4b13a/" target="_blank">LinkedIn</a>
+                <span>·</span>
+                <a href="mailto:aswin6303@gmail.com">Email</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- What I Write About -->
+    <section class="topics">
+        <div class="container">
+            <h2>What I Write About</h2>
+            <div class="topics-grid">
+                <div class="topic-card">
+                    <h3>Apache Kafka</h3>
+                    <p>Kafka internals, KRaft, replication, security, performance, operations and migrations. Deep understanding of how Kafka works under the hood and how to operate it reliably at scale.</p>
+                </div>
+                <div class="topic-card">
+                    <h3>Kubernetes</h3>
+                    <p>Operators, networking, stateful workloads, multi-cluster architectures and troubleshooting. Building production-grade Kubernetes deployments with focus on Strimzi and cloud-native patterns.</p>
+                </div>
+                <div class="topic-card">
+                    <h3>Distributed Systems</h3>
+                    <p>Reliability, networking, consistency, replication, fault tolerance and system design. Understanding the fundamentals that power resilient, scalable systems.</p>
+                </div>
+                <div class="topic-card">
+                    <h3>The Universe, Unfiltered</h3>
+                    <p>Driven by a deep curiosity for how reality works at its most fundamental level — from the strange rules of quantum mechanics and the elegance of classical mechanics, to the mind-bending implications of relativity and the language of mathematics that ties it all together. If the universe is asking the question, I'm probably writing about it.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Articles -->
+    <section class="featured">
+        <div class="container">
+            <h2>Featured Articles</h2>
+            <div class="articles-list">
+                <article class="article-card article-card-with-image">
+                    <a href="articles/multi-cluster-kafka-kubernetes.html" class="article-card-thumb" tabindex="-1" aria-hidden="true">
+                        <img src="articles/image/stretch-cluster.png" alt="">
+                    </a>
+                    <div class="article-card-body">
+                        <p class="article-meta">Kafka · Kubernetes · May 2026</p>
+                        <h3><a href="articles/multi-cluster-kafka-kubernetes.html">We Proved Multi-Cluster Kafka Works on Kubernetes… Here's Everything We Learned</a></h3>
+                        <p>A hands-on account of running Apache Kafka across multiple Kubernetes clusters — the architecture decisions, the failures we hit, and the hard-won lessons that made it production-ready.</p>
+                        <a href="articles/multi-cluster-kafka-kubernetes.html" class="read-more">Read article →</a>
+                    </div>
+                </article>
+            </div>
+            <div class="view-all">
+                <a href="articles.html" class="btn btn-outline">View all articles</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Teaser -->
+    <section class="projects-teaser">
+        <div class="container">
+            <h2>Featured Projects</h2>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <h3>strimzi-kafka-operator</h3>
+                    <p>A fork of the CNCF Kafka operator extended to span Kafka deployments across multiple independent Kubernetes clusters.</p>
+                    <a href="https://github.com/strimzi/strimzi-kafka-operator" target="_blank" class="btn btn-small">View on GitHub →</a>
+                </div>
+                <div class="project-card">
+                    <h3>kafka-mcp-server</h3>
+                    <p>An MCP server for Apache Kafka — manage topics, messages and consumer groups directly from Claude Desktop.</p>
+                    <a href="https://github.com/aswinayyolath/kafka-mcp-server" target="_blank" class="btn btn-small">View on GitHub →</a>
+                </div>
+            </div>
+            <div class="view-all">
+                <a href="projects.html" class="btn btn-outline">View all projects</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2024 Aswin. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="privacy.html">Privacy</a>
+                    <span>·</span>
+                    <a href="contact.html">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script>
+        (function() {
+            var toggle = document.querySelector('.nav-toggle');
+            var menu = document.getElementById('nav-menu');
+            if (!toggle || !menu) return;
+            toggle.addEventListener('click', function() {
+                var open = menu.classList.toggle('is-open');
+                toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                toggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+            });
+            document.addEventListener('click', function(e) {
+                if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+                    menu.classList.remove('is-open');
+                    toggle.setAttribute('aria-expanded', 'false');
+                    toggle.setAttribute('aria-label', 'Open navigation menu');
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GitHub projects and open source work">
+    <title>Projects - Aswin</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <img src="image/me.jpeg" alt="Aswin" class="logo-avatar">
+                <span>aswin</span>
+            </a>
+            <button class="nav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="nav-menu">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <rect y="3" width="22" height="2" rx="1" fill="currentColor"/>
+                    <rect y="10" width="22" height="2" rx="1" fill="currentColor"/>
+                    <rect y="17" width="22" height="2" rx="1" fill="currentColor"/>
+                </svg>
+            </button>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="articles.html">Articles</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="talks.html">Talks</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Projects</h1>
+            <p>Open source contributions and tools for building reliable distributed systems.</p>
+        </div>
+    </section>
+
+    <!-- Featured Projects -->
+    <section class="projects-section">
+        <div class="container">
+            <div class="projects-list">
+
+                <article class="project-card-full">
+                    <div class="project-header">
+                        <div class="project-title-group">
+                            <h3>strimzi-kafka-operator</h3>
+                            <span class="project-fork-badge">fork · multi-cluster</span>
+                        </div>
+                        <div class="project-meta">
+                            <a href="https://github.com/strimzi/strimzi-kafka-operator" target="_blank" rel="noopener">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                                View on GitHub
+                            </a>
+                        </div>
+                    </div>
+                    <p class="project-description">IBM's enterprise Kafka offering is built on Strimzi, the CNCF-incubating Kubernetes operator for Apache Kafka. I've spent significant time working on a fork of this operator to enable Kafka deployments that span across multiple independent Kubernetes clusters — tackling cross-cluster networking, operator coordination, TLS certificate management, and KRaft quorum across cluster boundaries.</p>
+                    <div class="project-tags">
+                        <span class="tag">Kafka</span>
+                        <span class="tag">Kubernetes</span>
+                        <span class="tag">Strimzi</span>
+                        <span class="tag">Multi-Cluster</span>
+                        <span class="tag">Java</span>
+                        <span class="tag">KRaft</span>
+                    </div>
+                </article>
+
+                <article class="project-card-full">
+                    <div class="project-header">
+                        <div class="project-title-group">
+                            <h3>kafka-mcp-server</h3>
+                            <span class="project-own-badge">personal project</span>
+                        </div>
+                        <div class="project-meta">
+                            <a href="https://github.com/aswinayyolath/kafka-mcp-server" target="_blank" rel="noopener">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                                View on GitHub
+                            </a>
+                        </div>
+                    </div>
+                    <p class="project-description">A comprehensive Model Context Protocol (MCP) server for Apache Kafka operations. Enables seamless Kafka cluster management through Claude Desktop and other MCP clients — with support for topics, messages, consumer groups, and real-time monitoring. Bridges the gap between AI assistants and production Kafka infrastructure.</p>
+                    <div class="project-tags">
+                        <span class="tag">Kafka</span>
+                        <span class="tag">MCP</span>
+                        <span class="tag">AI</span>
+                        <span class="tag">Claude</span>
+                        <span class="tag">Monitoring</span>
+                    </div>
+                </article>
+
+                <article class="project-card-full">
+                    <div class="project-header">
+                        <div class="project-title-group">
+                            <h3>submariner-operator</h3>
+                            <span class="project-fork-badge">fork</span>
+                        </div>
+                        <div class="project-meta">
+                            <a href="https://github.com/aswinayyolath/submariner-operator" target="_blank" rel="noopener">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                                View on GitHub
+                            </a>
+                        </div>
+                    </div>
+                    <p class="project-description">Submariner enables direct networking between Pods and Services in different Kubernetes clusters, either on-premises or in the cloud. Used as the cross-cluster networking layer in the multi-cluster Kafka stretch prototype — handling service discovery, encrypted tunnels, and the MCS API that makes cross-cluster Kafka communication possible.</p>
+                    <div class="project-tags">
+                        <span class="tag">Kubernetes</span>
+                        <span class="tag">Networking</span>
+                        <span class="tag">Multi-Cluster</span>
+                        <span class="tag">CNCF</span>
+                        <span class="tag">Go</span>
+                    </div>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2024 Aswin. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="privacy.html">Privacy</a>
+                    <span>·</span>
+                    <a href="contact.html">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+        .page-header {
+            padding: var(--spacing-2xl) 0;
+            background-color: var(--color-surface);
+            border-bottom: 1px solid var(--color-border);
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text);
+        }
+
+        .page-header p {
+            color: var(--color-text-secondary);
+            font-size: 15px;
+        }
+
+        .projects-section {
+            padding: var(--spacing-2xl) 0;
+            background-color: var(--color-bg);
+        }
+
+        .projects-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xl);
+        }
+
+        .project-card-full {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
+            padding: var(--spacing-lg);
+            transition: all 0.25s ease;
+        }
+
+        .project-card-full:hover {
+            border-color: var(--color-accent);
+            box-shadow: var(--glow-amber), var(--shadow-md);
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: var(--spacing-md);
+            gap: var(--spacing-md);
+        }
+
+        .project-title-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .project-header h3 {
+            font-size: 17px;
+            font-weight: 600;
+            margin: 0;
+            color: var(--color-text);
+            font-family: var(--font-mono);
+        }
+
+        .project-fork-badge {
+            font-size: 11px;
+            font-family: var(--font-mono);
+            font-weight: 600;
+            color: var(--color-text-muted);
+            background-color: var(--color-surface-alt, rgba(255,255,255,0.04));
+            border: 1px solid var(--color-border);
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        .project-own-badge {
+            font-size: 11px;
+            font-family: var(--font-mono);
+            font-weight: 600;
+            color: var(--color-teal);
+            background-color: var(--color-teal-light);
+            border: 1px solid rgba(45,212,191,0.2);
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        .project-meta {
+            flex-shrink: 0;
+        }
+
+        .project-meta a {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--color-teal);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: color 0.2s ease;
+        }
+
+        .project-meta a:hover {
+            color: var(--color-accent);
+        }
+
+        .project-description {
+            color: var(--color-text-secondary);
+            margin-bottom: var(--spacing-md);
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-xs);
+        }
+
+        .tag {
+            display: inline-block;
+            background-color: var(--color-teal-light);
+            color: var(--color-teal);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            border: 1px solid rgba(45,212,191,0.2);
+            font-family: var(--font-mono);
+        }
+    </style>
+    <script>
+        (function() {
+            var toggle = document.querySelector('.nav-toggle');
+            var menu = document.getElementById('nav-menu');
+            if (!toggle || !menu) return;
+            toggle.addEventListener('click', function() {
+                var open = menu.classList.toggle('is-open');
+                toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                toggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+            });
+            document.addEventListener('click', function(e) {
+                if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+                    menu.classList.remove('is-open');
+                    toggle.setAttribute('aria-expanded', 'false');
+                    toggle.setAttribute('aria-label', 'Open navigation menu');
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

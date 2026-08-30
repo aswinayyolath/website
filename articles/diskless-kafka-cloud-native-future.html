@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="KIP-1150 proposes Diskless Kafka — a groundbreaking architectural shift that replaces local disk storage with cloud object storage, making Kafka truly cloud-native.">
+    <title>Diskless Kafka: The Cloud-Native Future of Event Streaming — Aswin</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="../index.html" class="logo">
+                <img src="../image/me.jpeg" alt="Aswin" class="logo-avatar">
+                <span>aswin</span>
+            </a>
+            <button class="nav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="nav-menu">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <rect y="3" width="22" height="2" rx="1" fill="currentColor"/>
+                    <rect y="10" width="22" height="2" rx="1" fill="currentColor"/>
+                    <rect y="17" width="22" height="2" rx="1" fill="currentColor"/>
+                </svg>
+            </button>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../articles.html">Articles</a></li>
+                <li><a href="../projects.html">Projects</a></li>
+                <li><a href="../talks.html">Talks</a></li>
+                <li><a href="../about.html">About</a></li>
+                <li><a href="../contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <article class="article-page">
+        <div class="container">
+
+            <header class="article-header">
+                <p class="article-meta">Kafka · Cloud-Native · Architecture · May 7, 2025</p>
+                <h1>Diskless Kafka: The Cloud-Native Future of Event Streaming</h1>
+                <p class="article-subtitle">For over a decade, Apache Kafka has been the undisputed leader in real-time data streaming. But as organisations move to the cloud, its reliance on local disks has become its Achilles' heel. KIP-1150 changes that — entirely.</p>
+                <div class="article-byline">
+                    <img src="../image/me.jpeg" alt="Aswin" class="byline-avatar">
+                    <span>Aswin A</span>
+                    <span class="byline-sep">·</span>
+                    <span>Advisory Staff Software Engineer @ IBM</span>
+                    <span class="byline-sep">·</span>
+                    <span>7 min read</span>
+                </div>
+            </header>
+
+            <div class="article-hero-image">
+                <img src="image/diskless-kafka.png" alt="Apache Kafka logo with a disk crossed out — representing Diskless Kafka architecture">
+            </div>
+
+            <div class="article-body">
+
+                <div class="article-tldr">
+                    <span class="tldr-label">tl;dr</span>
+                    <p>KIP-1150, driven by the team at Aiven, proposes Diskless Kafka — an architectural shift that replaces local broker disk storage with pluggable cloud object storage (S3, GCS). Brokers become stateless, scaling becomes elastic, and entire classes of disk-related operational failures disappear. If adopted, Kafka becomes one of the first open-source platforms to support both traditional disk-based and fully cloud-native diskless topics.</p>
+                    <p>This post reflects my personal interpretation and analysis of KIP-1150. It's not meant to be definitive or exhaustive — just my way of making sense of an exciting proposal. I'd love to hear your thoughts and continue the conversation! 😊</p>
+                </div>
+
+                <h2>The Cloud Storage Imperative</h2>
+
+                <p>Modern cloud infrastructure operates with fundamentally different assumptions than the on-premises environments Kafka was originally built for. In the cloud, local disks are often ephemeral, provisioning capacity ahead of time is inefficient, and managing replication across brokers increases complexity and cost.</p>
+
+                <p>Diskless Kafka addresses these challenges by eliminating the broker's dependency on local storage. Instead of writing data to disk and replicating it across brokers, <strong>diskless topics persist records directly to a pluggable object store</strong> — such as Amazon S3 or Google Cloud Storage — at the moment of ingestion. This transforms Kafka into a system that naturally aligns with cloud-native principles: elastic, fault-tolerant, and pay-as-you-go.</p>
+
+                <p>The implications are significant. It removes the need for careful disk sizing, dramatically reduces IOPS-related infrastructure costs, and eliminates entire classes of operational failures tied to local storage. Brokers become stateless in the traditional Kafka sense, allowing them to be started or terminated rapidly without data movement or risk.</p>
+
+                <blockquote>
+                    <p>With object storage taking on the role of the durable commit log, Kafka can scale more like stateless services — without compromising on durability or availability guarantees.</p>
+                </blockquote>
+
+                <h2>How Diskless Kafka Works Under the Hood</h2>
+
+                <p>At its core, Diskless Kafka redefines how brokers handle data persistence. When producers send messages, brokers now keep the data <strong>in memory</strong> rather than writing to local disks. This in-memory buffer gets asynchronously flushed to cloud storage, with writes only acknowledged after successful persistence.</p>
+
+                <p>Consumers continue reading seamlessly — recent data comes from broker memory for low-latency access, while historical data is fetched directly from cloud storage when needed.</p>
+
+                <div class="arch-diagram">
+                    <div class="arch-row">
+                        <div class="arch-node arch-node-producer">Producer</div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-node arch-node-broker">Broker<br><span class="arch-note">in-memory buffer</span></div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-node arch-node-storage">Object Store<br><span class="arch-note">S3 / GCS</span></div>
+                    </div>
+                    <div class="arch-row arch-row-consumer">
+                        <div class="arch-consumer-label">Consumer reads: recent → broker memory &nbsp;·&nbsp; historical → object store</div>
+                    </div>
+                </div>
+
+                <p>This architectural shift brings immediate operational benefits. Broker restarts that previously took minutes (while reloading disk-based logs) now happen in <strong>seconds</strong>. Cluster scaling becomes dramatically simpler since new brokers don't need to replicate partition data locally. And perhaps most importantly, it eliminates the operational headaches of managing disk failures, capacity planning, and performance tuning of local storage.</p>
+
+                <p>Because any broker can accept writes for the same partition, clients no longer need to route writes to a specific leader. This simplifies client logic, reduces cross-zone traffic, and eliminates downtime during leader failover — a radical break from Kafka's traditional leader-follower architecture.</p>
+
+                <h2>Tiered Storage: The Foundation for Diskless Architecture</h2>
+
+                <p>Diskless Kafka didn't emerge in a vacuum — it builds upon Kafka's <strong>Tiered Storage</strong> (introduced in KIP-405), which first separated compute from storage. Tiered Storage allowed older log segments to move to cheaper object storage while keeping recent data local. Diskless Kafka takes this further by <strong>removing local storage entirely</strong>.</p>
+
+                <p>The evolution makes perfect sense. Tiered Storage proved remote storage could work reliably for Kafka. Diskless Kafka simply completes this transition by making remote storage the single source of truth. This progression mirrors how cloud-native applications have evolved — first hybrid architectures, then full commitment to cloud paradigms.</p>
+
+                <div class="evolution-timeline">
+                    <div class="timeline-step">
+                        <span class="timeline-label">Classic Kafka</span>
+                        <span class="timeline-desc">All data on local broker disks</span>
+                    </div>
+                    <div class="timeline-arrow">→</div>
+                    <div class="timeline-step">
+                        <span class="timeline-label">Tiered Storage <span class="timeline-kip">KIP-405</span></span>
+                        <span class="timeline-desc">Recent data local, old data in object store</span>
+                    </div>
+                    <div class="timeline-arrow">→</div>
+                    <div class="timeline-step timeline-step-highlight">
+                        <span class="timeline-label">Diskless Kafka <span class="timeline-kip">KIP-1150</span></span>
+                        <span class="timeline-desc">All data in object store. Brokers stateless.</span>
+                    </div>
+                </div>
+
+                <h2>Why This Matters for Real-World Deployments</h2>
+
+                <p>The implications for production systems are significant. Diskless Kafka replaces costly local SSDs with pay-as-you-go object storage, which can dramatically reduce infrastructure costs. It also simplifies operations by eliminating entire classes of disk-related failures, replication logic, and recovery complexities.</p>
+
+                <p>For high-throughput, low-priority workloads or archival pipelines, diskless topics offer a way to scale Kafka more efficiently and cost-effectively — without over-provisioning storage.</p>
+
+                <h2>Classic Topics vs Diskless Topics: Choosing the Right Tool</h2>
+
+                <p>Diskless topics won't replace classic Kafka topics — they'll complement them. The right choice depends on your workload's requirements.</p>
+
+                <div class="comparison-table">
+                    <div class="comparison-header">
+                        <div class="comparison-cell comparison-cell-label"></div>
+                        <div class="comparison-cell comparison-cell-classic">Classic Topics</div>
+                        <div class="comparison-cell comparison-cell-diskless">Diskless Topics</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-cell comparison-cell-label">Storage</div>
+                        <div class="comparison-cell">Local broker disk</div>
+                        <div class="comparison-cell">Cloud object store (S3, GCS)</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-cell comparison-cell-label">Broker state</div>
+                        <div class="comparison-cell">Stateful</div>
+                        <div class="comparison-cell">Stateless</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-cell comparison-cell-label">Latency</div>
+                        <div class="comparison-cell comparison-cell-good">Ultra-low</div>
+                        <div class="comparison-cell comparison-cell-mid">Low–medium</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-cell comparison-cell-label">Cost at scale</div>
+                        <div class="comparison-cell comparison-cell-bad">High (IOPS + disk sizing)</div>
+                        <div class="comparison-cell comparison-cell-good">Pay-as-you-go</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-cell comparison-cell-label">Scaling</div>
+                        <div class="comparison-cell">Manual partition rebalancing</div>
+                        <div class="comparison-cell comparison-cell-good">Elastic, no data movement</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-cell comparison-cell-label">Best for</div>
+                        <div class="comparison-cell">Financial tick data, ML pipelines</div>
+                        <div class="comparison-cell">Log analytics, audit trails, compliance</div>
+                    </div>
+                </div>
+
+                <p>For ultra-low-latency, high-throughput use cases — like financial tick data or ML feature pipelines — classic topics with local disks may still reign. But for log analytics, audit trails, or compliance events, diskless topics offer massive cost savings and operational simplicity.</p>
+
+                <hr>
+
+                <p>KIP-1150 is still a proposal, and the details will evolve as the community engages with it. But the direction is clear: Kafka is moving towards a future where storage is a cloud service, not a local concern. And that future looks compelling.</p>
+
+                <p>If you're following this proposal or have thoughts on the trade-offs, I'd love to hear from you.</p>
+
+            </div>
+
+            <div class="article-footer-nav">
+                <a href="../articles.html" class="read-more">← Back to all articles</a>
+            </div>
+
+        </div>
+    </article>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2025 Aswin. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="../privacy.html">Privacy</a>
+                    <span>·</span>
+                    <a href="../contact.html">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+        /* ── Article page layout ── */
+        .article-page {
+            padding: var(--spacing-2xl) 0 var(--spacing-3xl);
+        }
+
+        .article-header {
+            max-width: 720px;
+            margin: 0 auto var(--spacing-lg);
+            padding-bottom: var(--spacing-xl);
+            border-bottom: none;
+        }
+
+        /* ── Hero image ── */
+        .article-hero-image {
+            max-width: 720px;
+            margin: 0 auto var(--spacing-2xl);
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid var(--color-border);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px var(--color-border);
+            position: relative;
+        }
+
+        .article-hero-image::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to bottom,
+                transparent 55%,
+                rgba(15, 17, 23, 0.45) 100%
+            );
+            pointer-events: none;
+            border-radius: 14px;
+        }
+
+        .article-hero-image img {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-height: 420px;
+            object-fit: cover;
+            object-position: center 30%;
+        }
+
+        .article-header .article-meta {
+            font-size: 12px;
+            color: var(--color-teal);
+            font-family: var(--font-mono);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .article-header h1 {
+            font-size: 36px;
+            font-weight: 800;
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+            color: var(--color-text);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .article-subtitle {
+            font-size: 18px;
+            color: var(--color-text-secondary);
+            line-height: 1.7;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .article-byline {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--color-text-muted);
+            flex-wrap: wrap;
+        }
+
+        .byline-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: top center;
+            border: 1px solid var(--color-border);
+            flex-shrink: 0;
+        }
+
+        .byline-sep {
+            color: var(--color-border);
+        }
+
+        /* ── tl;dr box ── */
+        .article-tldr {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-left: 3px solid var(--color-teal);
+            border-radius: 0 10px 10px 0;
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .tldr-label {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--color-teal);
+            background-color: var(--color-teal-light);
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .article-tldr p {
+            font-size: 15px;
+            color: var(--color-text-secondary);
+            line-height: 1.7;
+            margin-bottom: var(--spacing-sm) !important;
+        }
+
+        .article-tldr p:last-child {
+            margin-bottom: 0 !important;
+        }
+
+        /* ── Article body typography ── */
+        .article-body {
+            max-width: 720px;
+            margin: 0 auto;
+            font-size: 16px;
+            line-height: 1.85;
+            color: var(--color-text-secondary);
+        }
+
+        .article-body p {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .article-body h2 {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--color-text);
+            margin: var(--spacing-2xl) 0 var(--spacing-md);
+            letter-spacing: -0.3px;
+            padding-bottom: var(--spacing-xs);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .article-body h3 {
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--color-accent);
+            margin: var(--spacing-xl) 0 var(--spacing-md);
+            letter-spacing: -0.2px;
+        }
+
+        .article-body ul,
+        .article-body ol {
+            margin: var(--spacing-md) 0 var(--spacing-lg);
+            padding-left: var(--spacing-lg);
+        }
+
+        .article-body li {
+            margin-bottom: var(--spacing-md);
+            line-height: 1.7;
+        }
+
+        .article-body strong {
+            color: var(--color-text);
+            font-weight: 600;
+        }
+
+        .article-body a {
+            color: var(--color-teal);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            text-decoration-color: var(--color-teal-light);
+        }
+
+        .article-body a:hover {
+            color: var(--color-accent);
+            text-decoration-color: var(--color-accent-light);
+        }
+
+        .article-body code {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            background-color: var(--color-surface-alt);
+            color: var(--color-teal);
+            padding: 2px 7px;
+            border-radius: 4px;
+            border: 1px solid var(--color-border);
+        }
+
+        .article-body blockquote {
+            border-left: 3px solid var(--color-accent);
+            margin: var(--spacing-lg) 0;
+            padding: var(--spacing-md) var(--spacing-lg);
+            background-color: var(--color-surface);
+            border-radius: 0 8px 8px 0;
+        }
+
+        .article-body blockquote p {
+            margin: 0 !important;
+            color: var(--color-text);
+            font-style: italic;
+            font-size: 15px;
+        }
+
+        .article-body hr {
+            border: none;
+            border-top: 1px solid var(--color-border);
+            margin: var(--spacing-2xl) 0;
+        }
+
+        /* ── Architecture flow diagram ── */
+        .arch-diagram {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: var(--spacing-lg) var(--spacing-xl);
+            margin: var(--spacing-lg) 0 var(--spacing-xl);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .arch-row {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+
+        .arch-node {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.4;
+            min-width: 110px;
+        }
+
+        .arch-node-producer {
+            background-color: var(--color-teal-light);
+            color: var(--color-teal);
+            border: 1px solid var(--color-teal);
+        }
+
+        .arch-node-broker {
+            background-color: var(--color-surface-alt, rgba(255,255,255,0.04));
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+        }
+
+        .arch-node-storage {
+            background-color: rgba(139, 92, 246, 0.08);
+            color: #a78bfa;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .arch-note {
+            display: block;
+            font-size: 11px;
+            font-weight: 400;
+            opacity: 0.7;
+            margin-top: 2px;
+        }
+
+        .arch-arrow {
+            color: var(--color-teal);
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .arch-row-consumer {
+            border-top: 1px dashed var(--color-border);
+            padding-top: var(--spacing-md);
+        }
+
+        .arch-consumer-label {
+            font-size: 13px;
+            color: var(--color-text-muted);
+            font-style: italic;
+        }
+
+        /* ── Evolution timeline ── */
+        .evolution-timeline {
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+            margin: var(--spacing-lg) 0 var(--spacing-xl);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .timeline-step {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: var(--spacing-md) var(--spacing-lg);
+            background-color: var(--color-surface);
+        }
+
+        .timeline-step-highlight {
+            background-color: rgba(20, 184, 166, 0.06);
+            border-left: 2px solid var(--color-teal);
+        }
+
+        .timeline-arrow {
+            display: flex;
+            align-items: center;
+            padding: 0 4px;
+            color: var(--color-teal);
+            font-weight: 700;
+            font-size: 18px;
+            background-color: var(--color-surface);
+            border-left: 1px solid var(--color-border);
+            border-right: 1px solid var(--color-border);
+        }
+
+        .timeline-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--color-text);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .timeline-kip {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--color-teal);
+            background-color: var(--color-teal-light);
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
+
+        .timeline-desc {
+            font-size: 12px;
+            color: var(--color-text-muted);
+            line-height: 1.5;
+        }
+
+        /* ── Comparison table ── */
+        .comparison-table {
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: var(--spacing-lg) 0 var(--spacing-xl);
+            font-size: 14px;
+        }
+
+        .comparison-header,
+        .comparison-row {
+            display: grid;
+            grid-template-columns: 1.2fr 1.8fr 1.8fr;
+        }
+
+        .comparison-header {
+            background-color: var(--color-surface);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .comparison-row {
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .comparison-row:last-child {
+            border-bottom: none;
+        }
+
+        .comparison-row:nth-child(even) {
+            background-color: rgba(255,255,255,0.02);
+        }
+
+        .comparison-cell {
+            padding: 11px 14px;
+            color: var(--color-text-secondary);
+            line-height: 1.5;
+            border-right: 1px solid var(--color-border);
+        }
+
+        .comparison-cell:last-child {
+            border-right: none;
+        }
+
+        .comparison-cell-label {
+            font-weight: 600;
+            color: var(--color-text-muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .comparison-cell-classic {
+            font-weight: 700;
+            color: var(--color-text);
+        }
+
+        .comparison-cell-diskless {
+            font-weight: 700;
+            color: var(--color-teal);
+        }
+
+        .comparison-cell-good {
+            color: var(--color-teal);
+        }
+
+        .comparison-cell-mid {
+            color: #f59e0b;
+        }
+
+        .comparison-cell-bad {
+            color: #f87171;
+        }
+
+        /* ── Footer back link ── */
+        .article-footer-nav {
+            max-width: 720px;
+            margin: var(--spacing-2xl) auto 0;
+            padding-top: var(--spacing-xl);
+            border-top: 1px solid var(--color-border);
+        }
+
+        /* ── Mobile ── */
+        @media (max-width: 768px) {
+            .article-hero-image {
+                border-radius: 10px;
+                margin-bottom: var(--spacing-xl);
+            }
+
+            .article-hero-image img {
+                max-height: 220px;
+            }
+
+            .article-header h1 {
+                font-size: 26px;
+            }
+
+            .article-subtitle {
+                font-size: 15px;
+            }
+
+            .article-body {
+                font-size: 15px;
+                line-height: 1.8;
+            }
+
+            .article-body h2 {
+                font-size: 22px;
+            }
+
+            .article-body h3 {
+                font-size: 17px;
+            }
+
+            .arch-row {
+                gap: var(--spacing-sm);
+            }
+
+            .arch-node {
+                min-width: 80px;
+                padding: 8px 12px;
+            }
+
+            .evolution-timeline {
+                flex-direction: column;
+            }
+
+            .timeline-arrow {
+                padding: 4px var(--spacing-lg);
+                border: none;
+                border-top: 1px solid var(--color-border);
+                border-bottom: 1px solid var(--color-border);
+                transform: rotate(90deg);
+                align-self: center;
+                width: 32px;
+                justify-content: center;
+            }
+
+            .comparison-header,
+            .comparison-row {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+
+            .comparison-cell {
+                font-size: 12px;
+                padding: 9px 10px;
+            }
+
+            .article-byline {
+                gap: 6px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .comparison-header,
+            .comparison-row {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .comparison-cell:nth-child(1) {
+                grid-column: 1 / -1;
+                border-right: none;
+                background-color: var(--color-surface);
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.3px;
+                color: var(--color-text-muted);
+            }
+        }
+    </style>
+
+    <script>
+        (function() {
+            var toggle = document.querySelector('.nav-toggle');
+            var menu = document.getElementById('nav-menu');
+            if (!toggle || !menu) return;
+            toggle.addEventListener('click', function() {
+                var open = menu.classList.toggle('is-open');
+                toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                toggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+            });
+            document.addEventListener('click', function(e) {
+                if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+                    menu.classList.remove('is-open');
+                    toggle.setAttribute('aria-expanded', 'false');
+                    toggle.setAttribute('aria-label', 'Open navigation menu');
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

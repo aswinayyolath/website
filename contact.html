@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Get in touch with Aswin">
+    <title>Contact - Aswin</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <img src="image/me.jpeg" alt="Aswin" class="logo-avatar">
+                <span>aswin</span>
+            </a>
+            <button class="nav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="nav-menu">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <rect y="3" width="22" height="2" rx="1" fill="currentColor"/>
+                    <rect y="10" width="22" height="2" rx="1" fill="currentColor"/>
+                    <rect y="17" width="22" height="2" rx="1" fill="currentColor"/>
+                </svg>
+            </button>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="articles.html">Articles</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="talks.html">Talks</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Get in Touch</h1>
+            <p>Have a question or want to discuss Kafka, Kubernetes, or distributed systems?</p>
+        </div>
+    </section>
+
+    <!-- Contact Content -->
+    <section class="contact-section">
+        <div class="container">
+            <div class="contact-grid">
+                <!-- Main Contact -->
+                <article class="contact-main">
+                    <h2>Need help?</h2>
+                    
+                    <p>I occasionally work with engineering teams on:</p>
+                    <ul class="services-list">
+                        <li>Kafka architecture and design reviews</li>
+                        <li>Kafka migration planning and execution</li>
+                        <li>Kafka troubleshooting and performance optimization</li>
+                        <li>Kubernetes architecture for stateful applications</li>
+                        <li>Distributed systems design and reliability reviews</li>
+                        <li>Technical workshops and training</li>
+                    </ul>
+
+                    <h3>How to reach me</h3>
+                    <p>The best way to get in touch is by email:</p>
+                    <div class="contact-item">
+                        <strong>Email:</strong>
+                        <a href="mailto:aswin6303@gmail.com">aswin6303@gmail.com</a>
+                    </div>
+
+                    <p style="margin-top: var(--spacing-lg);">I try to respond to all emails within 48 hours. In your message, please include:</p>
+                    <ul class="email-tips">
+                        <li>What you're working on or the problem you're facing</li>
+                        <li>Your current setup (Kafka version, deployment method, cluster size, etc.)</li>
+                        <li>What outcomes you're hoping to achieve</li>
+                        <li>Your timeline and preferred way to work together</li>
+                    </ul>
+
+                    <h3 style="margin-top: var(--spacing-xl);">Other ways to connect</h3>
+                    <div class="social-grid">
+                        <div class="social-item">
+                            <h4>GitHub</h4>
+                            <p>Check out my open source work and projects.</p>
+                            <a href="https://github.com/aswinayyolath" target="_blank">github.com/aswinayyolath →</a>
+                        </div>
+                        <div class="social-item">
+                            <h4>LinkedIn</h4>
+                            <p>Connect with me professionally to stay updated.</p>
+                            <a href="https://www.linkedin.com/in/aswin-a-133a4b13a/" target="_blank">linkedin.com/in/aswin-a →</a>
+                        </div>
+                        <div class="social-item">
+                            <h4>Talks</h4>
+                            <p>Speaking at conferences and meetups about technical topics.</p>
+                            <a href="talks.html">View talks →</a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Sidebar -->
+                <aside class="contact-sidebar">
+                    <div class="sidebar-card">
+                        <h4>Consulting</h4>
+                        <p>Available for architectural reviews, troubleshooting engagements, and technical workshops.</p>
+                    </div>
+
+                    <div class="sidebar-card">
+                        <h4>Open Source</h4>
+                        <p>Contributing to Kafka, Kubernetes, Strimzi and related projects. Interested in collaboration.</p>
+                    </div>
+
+                    <div class="sidebar-card">
+                        <h4>Speaking</h4>
+                        <p>Open to conference talks and meetup presentations on distributed systems and cloud-native topics.</p>
+                    </div>
+
+                    <div class="sidebar-card">
+                        <h4>Response Time</h4>
+                        <p>Typically respond to emails within 48 hours. For urgent matters, indicate that in your subject line.</p>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2024 Aswin. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="privacy.html">Privacy</a>
+                    <span>·</span>
+                    <a href="contact.html">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+        .page-header {
+            padding: var(--spacing-2xl) 0;
+            background-color: var(--color-surface);
+            border-bottom: 1px solid var(--color-border);
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text);
+        }
+
+        .page-header p {
+            color: var(--color-text-secondary);
+            font-size: 15px;
+        }
+
+        .contact-section {
+            padding: var(--spacing-2xl) 0;
+            background-color: var(--color-bg);
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: var(--spacing-2xl);
+        }
+
+        .contact-main h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text);
+        }
+
+        .contact-main h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: var(--spacing-xl) 0 var(--spacing-md) 0;
+            color: var(--color-text);
+        }
+
+        .contact-main p {
+            color: var(--color-text-secondary);
+            margin-bottom: var(--spacing-md);
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        .services-list,
+        .email-tips {
+            list-style: none;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .services-list li,
+        .email-tips li {
+            padding: var(--spacing-sm) 0;
+            padding-left: var(--spacing-lg);
+            position: relative;
+            color: var(--color-text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .services-list li:before,
+        .email-tips li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--color-teal);
+            font-weight: 600;
+        }
+
+        .contact-item {
+            background-color: var(--color-surface);
+            padding: var(--spacing-md);
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+            display: inline-block;
+        }
+
+        .contact-item strong {
+            color: var(--color-text-secondary);
+        }
+
+        .contact-item a {
+            color: var(--color-accent);
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: var(--spacing-sm);
+        }
+
+        .contact-item a:hover {
+            color: var(--color-teal);
+        }
+
+        .social-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-lg);
+        }
+
+        .social-item {
+            background-color: var(--color-surface);
+            padding: var(--spacing-lg);
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+            transition: border-color 0.2s ease;
+        }
+
+        .social-item:hover {
+            border-color: var(--color-teal);
+        }
+
+        .social-item h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+            color: var(--color-teal);
+        }
+
+        .social-item p {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--spacing-md);
+            line-height: 1.5;
+        }
+
+        .social-item a {
+            color: var(--color-accent);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .social-item a:hover {
+            color: var(--color-teal);
+        }
+
+        .contact-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+
+        .sidebar-card {
+            background-color: var(--color-surface);
+            padding: var(--spacing-lg);
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+            transition: border-color 0.2s ease;
+        }
+
+        .sidebar-card:hover {
+            border-color: var(--color-accent);
+        }
+
+        .sidebar-card h4 {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--color-accent);
+            margin-bottom: var(--spacing-md);
+            letter-spacing: 0.5px;
+            font-family: var(--font-mono);
+        }
+
+        .sidebar-card p {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            line-height: 1.6;
+        }
+
+        .newsletter-section {
+            padding: var(--spacing-2xl) 0;
+            background-color: var(--color-surface);
+            border-top: 1px solid var(--color-border);
+            text-align: center;
+        }
+
+        .newsletter-section h2 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text);
+        }
+
+        .newsletter-section p {
+            color: var(--color-text-secondary);
+            margin-bottom: var(--spacing-lg);
+            font-size: 15px;
+        }
+
+        .newsletter-form {
+            display: flex;
+            gap: var(--spacing-sm);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .newsletter-form input {
+            padding: 10px 16px;
+            border: 1.5px solid var(--color-border);
+            border-radius: 8px;
+            font-family: var(--font-family);
+            font-size: 14px;
+            width: 220px;
+            background-color: var(--color-surface-alt);
+            color: var(--color-text);
+        }
+
+        .newsletter-form input::placeholder {
+            color: var(--color-text-muted);
+        }
+
+        .newsletter-form input:focus {
+            outline: none;
+            border-color: var(--color-teal);
+            box-shadow: 0 0 0 3px var(--color-teal-light);
+            background-color: var(--color-surface-raise);
+        }
+
+        @media (max-width: 768px) {
+            .contact-grid {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-lg);
+            }
+
+            .page-header h1 {
+                font-size: 28px;
+            }
+
+            .social-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .newsletter-form input {
+                width: 100%;
+                max-width: 320px;
+            }
+        }
+    </style>
+    <script>
+        (function() {
+            var toggle = document.querySelector('.nav-toggle');
+            var menu = document.getElementById('nav-menu');
+            if (!toggle || !menu) return;
+            toggle.addEventListener('click', function() {
+                var open = menu.classList.toggle('is-open');
+                toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                toggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+            });
+            document.addEventListener('click', function(e) {
+                if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+                    menu.classList.remove('is-open');
+                    toggle.setAttribute('aria-expanded', 'false');
+                    toggle.setAttribute('aria-label', 'Open navigation menu');
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

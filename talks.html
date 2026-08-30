@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Talks and presentations on Kafka, Kubernetes and Distributed Systems by Aswin">
+    <title>Talks & Presentations - Aswin</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <img src="image/me.jpeg" alt="Aswin" class="logo-avatar">
+                <span>aswin</span>
+            </a>
+            <button class="nav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="nav-menu">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <rect y="3" width="22" height="2" rx="1" fill="currentColor"/>
+                    <rect y="10" width="22" height="2" rx="1" fill="currentColor"/>
+                    <rect y="17" width="22" height="2" rx="1" fill="currentColor"/>
+                </svg>
+            </button>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="articles.html">Articles</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="talks.html">Talks</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Talks & Presentations</h1>
+            <p>Conference talks and technical presentations on distributed systems, Kafka and Kubernetes.</p>
+        </div>
+    </section>
+
+    <!-- Talks List -->
+    <section class="talks-section">
+        <div class="container">
+            <div class="talks-list">
+
+                <!-- Talk 1: Cloud Native Summit Kerala 2026 -->
+                <article class="talk-card">
+                    <a href="https://drive.google.com/file/d/1C5sRHrIjzcZ2srdLImLo8cViCPLJ_3mu" target="_blank" rel="noopener" class="talk-thumbnail-link">
+                        <div class="talk-thumbnail">
+                            <img src="talk/images/cloud-native-summit-kerala-2026.jpeg" alt="Cloud Native Summit Kerala 2026">
+                            <div class="talk-thumbnail-overlay">
+                                <span class="talk-thumbnail-badge">Slides →</span>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="talk-body">
+                        <div class="talk-meta-row">
+                            <span class="talk-event">Cloud Native Summit Kerala</span>
+                            <span class="talk-dot">·</span>
+                            <span class="talk-date">August 22, 2026</span>
+                            <span class="talk-status talk-status-upcoming">Video coming soon</span>
+                        </div>
+                        <h3>What Happens When You Kill an Entire Kubernetes Cluster? Our Kafka Kept Running.</h3>
+                        <p>What if losing an entire Kubernetes cluster didn't take your Kafka down with it? We built a working stretch Kafka cluster distributed across three independent Kubernetes clusters. In our full-cluster failure test, we terminated every pod in one cluster simultaneously — Kafka stayed operational, producers and consumers saw no interruption, and a new KRaft leader was elected in 1.5 seconds.</p>
+                        <div class="talk-tags">
+                            <span class="talk-tag">Kafka</span>
+                            <span class="talk-tag">Kubernetes</span>
+                            <span class="talk-tag">High Availability</span>
+                            <span class="talk-tag">KRaft</span>
+                        </div>
+                        <div class="talk-links">
+                            <a href="https://drive.google.com/file/d/1C5sRHrIjzcZ2srdLImLo8cViCPLJ_3mu" target="_blank" rel="noopener" class="talk-link talk-link-slides">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                                Slides
+                            </a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Talk 2: StrimziCon 2025 -->
+                <article class="talk-card">
+                    <a href="https://www.youtube.com/watch?v=_FgZx0Vc6eM" target="_blank" rel="noopener" class="talk-thumbnail-link">
+                        <div class="talk-thumbnail">
+                            <img src="talk/images/strimzicon-2025.avif" alt="StrimziCon 2025">
+                            <div class="talk-thumbnail-overlay">
+                                <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="rgba(0,0,0,0.55)"/><polygon points="10,8 17,12 10,16" fill="white"/></svg>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="talk-body">
+                        <div class="talk-meta-row">
+                            <span class="talk-event">StrimziCon</span>
+                            <span class="talk-dot">·</span>
+                            <span class="talk-date">June 2025</span>
+                        </div>
+                        <h3>Stretching Strimzi: Exploring Multi-Cluster Kafka for High Availability</h3>
+                        <p>As organisations rely on Kafka for mission-critical workloads, ensuring high availability across Kubernetes clusters is a key challenge. This talk explores Stretch Clusters — a proposed Strimzi enhancement that distributes Kafka brokers across clusters while maintaining a unified deployment model, leveraging cloud-native networking solutions like Submariner and Cilium.</p>
+                        <div class="talk-tags">
+                            <span class="talk-tag">Strimzi</span>
+                            <span class="talk-tag">Multi-Cluster</span>
+                            <span class="talk-tag">Submariner</span>
+                            <span class="talk-tag">Cilium</span>
+                        </div>
+                        <div class="talk-links">
+                            <a href="https://www.youtube.com/watch?v=_FgZx0Vc6eM" target="_blank" rel="noopener" class="talk-link talk-link-video">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                Watch
+                            </a>
+                            <a href="https://drive.google.com/file/d/1gkB2E-SBNCSZicwvlF93QJU6yAA6JTSn/view" target="_blank" rel="noopener" class="talk-link talk-link-slides">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                                Slides
+                            </a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Talk 3: Current Bengaluru 2025 -->
+                <article class="talk-card">
+                    <a href="https://current.confluent.io/post-conference-videos-2025/breaking-the-kubernetes-barrier-deploying-kafka-across-clusters-bng25" target="_blank" rel="noopener" class="talk-thumbnail-link">
+                        <div class="talk-thumbnail">
+                            <img src="talk/images/current-bengaluru-2025.jpeg" alt="Current Bengaluru 2025">
+                            <div class="talk-thumbnail-overlay">
+                                <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="rgba(0,0,0,0.55)"/><polygon points="10,8 17,12 10,16" fill="white"/></svg>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="talk-body">
+                        <div class="talk-meta-row">
+                            <span class="talk-event">Confluent Current Bengaluru</span>
+                            <span class="talk-dot">·</span>
+                            <span class="talk-date">March 2025</span>
+                        </div>
+                        <h3>Breaking the Kubernetes Barrier: Deploying Kafka Across Clusters</h3>
+                        <p>A Kubernetes cluster outage shouldn't mean a Kafka outage. This session explores practical methodologies for deploying Kafka across multiple Kubernetes clusters — covering broker and controller distribution, fault tolerance, cross-cluster communication, and resource synchronisation within the Operator framework.</p>
+                        <div class="talk-tags">
+                            <span class="talk-tag">Kafka</span>
+                            <span class="talk-tag">Kubernetes</span>
+                            <span class="talk-tag">Operators</span>
+                            <span class="talk-tag">Fault Tolerance</span>
+                        </div>
+                        <div class="talk-links">
+                            <a href="https://current.confluent.io/post-conference-videos-2025/breaking-the-kubernetes-barrier-deploying-kafka-across-clusters-bng25" target="_blank" rel="noopener" class="talk-link talk-link-video">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                Watch
+                            </a>
+                            <a href="https://docs.google.com/presentation/d/1BIXVA56hbGA9sKrXjmqPR7xGEFVnQcTL" target="_blank" rel="noopener" class="talk-link talk-link-slides">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                                Slides
+                            </a>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Speaking Availability -->
+    <section class="speaking-cta">
+        <div class="container">
+            <h2>Interested in having me speak?</h2>
+            <p>I speak at conferences and meetups about Kafka, Kubernetes, and distributed systems. If you're organising an event and would like to discuss a talk topic, feel free to reach out.</p>
+            <a href="contact.html" class="btn btn-primary">Get in touch</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2025 Aswin. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="privacy.html">Privacy</a>
+                    <span>·</span>
+                    <a href="contact.html">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+        .page-header {
+            padding: var(--spacing-2xl) 0;
+            background-color: var(--color-surface);
+            border-bottom: 1px solid var(--color-border);
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text);
+        }
+
+        .page-header p {
+            color: var(--color-text-secondary);
+            font-size: 15px;
+        }
+
+        /* ── Talks section ── */
+        .talks-section {
+            padding: var(--spacing-2xl) 0 var(--spacing-3xl);
+            background-color: var(--color-bg);
+        }
+
+        .talks-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-2xl);
+        }
+
+        /* ── Talk card ── */
+        .talk-card {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: var(--spacing-xl);
+            padding-bottom: var(--spacing-2xl);
+            border-bottom: 1px solid var(--color-border);
+            align-items: start;
+        }
+
+        .talk-card:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        /* ── Thumbnail ── */
+        .talk-thumbnail-link {
+            display: block;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .talk-thumbnail {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--color-border);
+            aspect-ratio: 16 / 9;
+            background-color: var(--color-surface);
+        }
+
+        .talk-thumbnail img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .talk-thumbnail-link:hover .talk-thumbnail img {
+            transform: scale(1.04);
+        }
+
+        .talk-thumbnail-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0);
+            transition: background 0.25s ease;
+        }
+
+        .talk-thumbnail-link:hover .talk-thumbnail-overlay {
+            background: rgba(0,0,0,0.25);
+        }
+
+        .play-icon {
+            width: 44px;
+            height: 44px;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .talk-thumbnail-link:hover .play-icon {
+            opacity: 1;
+        }
+
+        .talk-thumbnail-badge {
+            font-size: 12px;
+            font-weight: 600;
+            font-family: var(--font-mono);
+            color: white;
+            background: rgba(0,0,0,0.6);
+            padding: 4px 10px;
+            border-radius: 6px;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .talk-thumbnail-link:hover .talk-thumbnail-badge {
+            opacity: 1;
+        }
+
+        /* ── Talk body ── */
+        .talk-body {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .talk-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .talk-event {
+            font-size: 12px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: var(--color-teal);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .talk-dot {
+            color: var(--color-border);
+            font-size: 12px;
+        }
+
+        .talk-date {
+            font-size: 12px;
+            font-family: var(--font-mono);
+            color: var(--color-text-muted);
+        }
+
+        .talk-status {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-left: 4px;
+        }
+
+        .talk-status-upcoming {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .talk-body h3 {
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--color-text);
+            line-height: 1.35;
+            letter-spacing: -0.2px;
+            margin: 0;
+        }
+
+        .talk-body p {
+            font-size: 14px;
+            color: var(--color-text-secondary);
+            line-height: 1.75;
+            margin: 0;
+        }
+
+        /* ── Tags ── */
+        .talk-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .talk-tag {
+            font-size: 11px;
+            font-family: var(--font-mono);
+            font-weight: 600;
+            color: var(--color-text-muted);
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            padding: 3px 9px;
+            border-radius: 20px;
+        }
+
+        /* ── Links ── */
+        .talk-links {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+        }
+
+        .talk-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .talk-link-video {
+            background-color: rgba(20, 184, 166, 0.1);
+            color: var(--color-teal);
+            border: 1px solid rgba(20, 184, 166, 0.25);
+        }
+
+        .talk-link-video:hover {
+            background-color: rgba(20, 184, 166, 0.2);
+            border-color: var(--color-teal);
+        }
+
+        .talk-link-slides {
+            background-color: var(--color-surface);
+            color: var(--color-text-secondary);
+            border: 1px solid var(--color-border);
+        }
+
+        .talk-link-slides:hover {
+            color: var(--color-text);
+            border-color: var(--color-text-muted);
+        }
+
+        /* ── Speaking CTA ── */
+        .speaking-cta {
+            padding: var(--spacing-2xl) 0;
+            background-color: var(--color-surface);
+            border-top: 1px solid var(--color-border);
+            text-align: center;
+        }
+
+        .speaking-cta h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text);
+        }
+
+        .speaking-cta p {
+            color: var(--color-text-secondary);
+            margin-bottom: var(--spacing-lg);
+            font-size: 15px;
+            max-width: 520px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ── Mobile ── */
+        @media (max-width: 768px) {
+            .talk-card {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-lg);
+            }
+
+            .talk-thumbnail {
+                aspect-ratio: 16 / 7;
+            }
+
+            .talk-body h3 {
+                font-size: 17px;
+            }
+
+            .play-icon,
+            .talk-thumbnail-badge {
+                opacity: 1;
+            }
+        }
+    </style>
+
+    <script>
+        (function() {
+            var toggle = document.querySelector('.nav-toggle');
+            var menu = document.getElementById('nav-menu');
+            if (!toggle || !menu) return;
+            toggle.addEventListener('click', function() {
+                var open = menu.classList.toggle('is-open');
+                toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                toggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+            });
+            document.addEventListener('click', function(e) {
+                if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+                    menu.classList.remove('is-open');
+                    toggle.setAttribute('aria-expanded', 'false');
+                    toggle.setAttribute('aria-label', 'Open navigation menu');
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
